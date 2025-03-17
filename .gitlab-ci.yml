@@ -48,4 +48,4 @@ deploy:
         docker run -d --name backoffice-service -p 8083:3000 -e REPORT_SERVICE_PORT='$REPORT_SERVICE_PORT' $CI_REGISTRY_IMAGE:latest
       "
   only:
-    - main
+    - master
