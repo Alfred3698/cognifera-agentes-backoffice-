@@ -4,13 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { registerSwagger } from 'utils/swagger';
 import { SERVICE_NAME } from './constants/common';
-import { CebollaServiceModule } from './cebolla-service.module';
+import { BackofficeServiceModule } from './backoffice-service.module';
 import { Logger } from '@b-accel-logger/logger.service';
 
-const logger = new Logger({ context: 'Report Service' });
+const logger = new Logger({ context: 'Backoffice Service' });
 
 async function bootstrap() {
-  const app = await NestFactory.create(CebollaServiceModule);
+  const app = await NestFactory.create(BackofficeServiceModule);
   app.useGlobalPipes(new ValidationPipe());
   registerSwagger(app, SERVICE_NAME);
   await app.startAllMicroservicesAsync();

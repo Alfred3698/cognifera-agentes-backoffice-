@@ -25,11 +25,12 @@ export class BackofficeController {
     private logger: Logger,
   ) {}
 
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
+  @Get()
+  //@UseGuards(JwtAuthGuard)
   async findPropertyById(@Param() params: PropertiesFindParams) {
     try {
       this.logger.log(`init controller function find Property By ${params.id}`);
+      return 'Hello World';
       return await this.backofficeService.findTestMeId(params.id);
     } catch (err) {
       this.logger.error(
