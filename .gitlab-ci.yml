@@ -48,7 +48,12 @@ deploy:
         docker run -d --name backoffice-service \
           -p 8083:3000 \
           -e REPORT_SERVICE_PORT='$REPORT_SERVICE_PORT' \
-          $CI_REGISTRY_IMAGE:latest"
+          -e TYPEORM_HOST='$TYPEORM_HOST' \
+          -e TYPEORM_PORT='$TYPEORM_PORT' \
+          -e TYPEORM_REPORT_DATABASE='$TYPEORM_REPORT_DATABASE' \
+          -e TYPEORM_REPORT_PASSWORD='$TYPEORM_REPORT_PASSWORD' \
+          -e TYPEORM_REPORT_USERNAME='$TYPEORM_REPORT_USERNAME' \
+          $CI_REGISTRY_IMAGE:latest
       "
   only:
     - master
