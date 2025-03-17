@@ -1,0 +1,8 @@
+FROM node:lts
+
+COPY ./package.json /root/src/package.json
+COPY ./package-lock.json /root/src/package-lock.json
+
+WORKDIR /root/src
+
+RUN npm i && npm ci

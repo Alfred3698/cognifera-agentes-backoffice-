@@ -1,0 +1,37 @@
+version: '3'
+services:
+  builder-image:
+    image: olympus-node
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+
+  backoffice-service:
+    image: olympus-node
+    command: sh -c "npm run start:dev backoffice-service"
+    working_dir: /root/src
+    volumes:
+      - ./apps/backoffice-service:/root/src/apps/backoffice-service
+      - ./config:/root/src/config
+      - ./ormconfig.js:/root/src/ormconfig.js
+      - ./nest-cli.json:/root/src/nest-cli.json
+      - ./tsconfig.json:/root/src/tsconfig.json
+      - ./tsconfig.build.json:/root/src/tsconfig.build.json
+      - ./utils:/root/src/utils
+      - ./services:/root/src/services
+      - ./modules/b-accel-logger:/root/src/modules/b-accel-logger
+      - ./documentation/swagger-docs:/root/src/documentation/swagger-docs
+    env_file:
+      - ./docker-secrets/rent-property.env
+    ports:
+      - "5019:3000"
+    depends_on:
+      - builder-image
+
+  postgres-db_test1:
+    image: postgres
+    restart: always
+    ports:
+      - '5433:5432'
+    env_file:
+      - ./docker-secrets/db.env

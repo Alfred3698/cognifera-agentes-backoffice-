@@ -1,0 +1,1 @@
+npm run typeorm:migrate:backoffice-service && npm run start:dev backoffice-service

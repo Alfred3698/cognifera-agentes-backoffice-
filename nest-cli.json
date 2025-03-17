@@ -1,0 +1,16 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/src",
+  "monorepo": true,
+  "projects": {
+    "backoffice-service": {
+      "type": "application",
+      "root": "apps/backoffice-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/backoffice-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/backoffice-service/tsconfig.app.json"
+      }
+    }
+  }
+}

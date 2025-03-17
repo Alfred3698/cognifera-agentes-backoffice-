@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2017",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "allowJs": true,
+    "strictPropertyInitialization": false,
+    "moduleResolution": "node",
+    "paths": {
+      "@b-accel-logger/*": [
+        "./modules/b-accel-logger/src/*"
+      ],
+      "@data-transformation/*": [
+        "./modules/data-transformation/src/*"
+      ]
+    },
+    "plugins": [
+      {
+        "transform": "ts-transformer-imports"
+      }
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
