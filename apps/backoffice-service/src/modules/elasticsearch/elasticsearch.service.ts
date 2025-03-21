@@ -7,10 +7,10 @@ export class ElasticsearchService implements OnModuleInit {
 
   constructor(private logger: Logger) {
     this.client = new Client({
-      node: 'http://31.220.107.240:9200', // URL de Elasticsearch
+      node: process.env.ELASTICSEARCH_URL, // URL de Elasticsearch
       auth: {
-        username: 'elastic', // Si usas autenticación básica
-        password: 'iuscopilot08011269Eeyd#!',
+        username: process.env.ELASTICSEARCH_USERNAME, // Si usas autenticación básica
+        password: process.env.ELASTICSEARCH_PASSWORD, // Si usas autenticación básica
       },
     });
   }
@@ -33,7 +33,7 @@ export class ElasticsearchService implements OnModuleInit {
   }
 
   async search(index: string, query: any) {
-    return this.client.search({
+    return await this.client.search({
       index,
       body: query,
     });
@@ -43,6 +43,16 @@ export class ElasticsearchService implements OnModuleInit {
     return this.client.delete({
       index,
       id,
+    });
+  }
+
+  async updateDocument(index: string, id: string, body: any) {
+    return this.client.update({
+      index,
+      id,
+      body: {
+        doc: body,
+      },
     });
   }
 }
