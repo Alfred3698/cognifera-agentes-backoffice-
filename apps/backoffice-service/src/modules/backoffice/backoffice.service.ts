@@ -1,8 +1,6 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Logger } from '@b-accel-logger/logger.service';
 import { PropertiesDBService } from '../db-module/properties.service';
-import { TestMe } from '../../database/entities/test-me.entity';
 import {
   ChatRequest,
   ChatResponseDto,
@@ -25,17 +23,53 @@ export class BackofficeService {
   ) {}
 
   async getChat(params: ChatRequest): Promise<ChatResponseDto> {
-    const { pushName, q, tosearch, max } = params;
-    let idConversacion = params.idConversacion;
+    const { q } = params;
+    const idConversacion = params.idConversacion;
     this.logger.log('int getChat with params:', idConversacion);
+
+    const baseConocimiento = await this.getBaseConocimiento();
+    const messages = await this.buildInitialMessages(
+      baseConocimiento,
+      q,
+      idConversacion,
+    );
+
+    const respModel = this.buildResponseModel(messages);
+    const chatResponse = await this.getChatResponse(respModel);
+
+    this.validateChatResponse(chatResponse);
+
+    const botResponse = this.buildBotResponse(
+      idConversacion,
+      q,
+      chatResponse.choices[0].message.content,
+    );
+
+    return await this.handleConversacion(
+      messages,
+      idConversacion,
+      q,
+      botResponse,
+    );
+  }
+
+  private async getBaseConocimiento(): Promise<string> {
     const existingReglas = await this.getAllDocuments();
     const reglasToUpdate = existingReglas[0];
-    const baseConocimiento = reglasToUpdate.base_conocimiento.join('');
+    return reglasToUpdate.base_conocimiento.join('');
+  }
+
+  private async buildInitialMessages(
+    baseConocimiento: string,
+    q: string,
+    idConversacion: string,
+  ): Promise<MessageDto[]> {
     const messages: MessageDto[] = [];
     messages.push({
       role: 'system',
       content: baseConocimiento,
     });
+
     if (idConversacion) {
       const conversacionPrincipal =
         await this.conversacionesService.getAllConversacionesByIdConversacion(
@@ -51,21 +85,28 @@ export class BackofficeService {
         }
       }
     }
+
     messages.push({
       role: 'user',
       content: q,
     });
 
-    const respModel: ResponseModelDto = {
+    return messages;
+  }
+
+  private buildResponseModel(messages: MessageDto[]): ResponseModelDto {
+    return {
       model: 'gpt-4o-mini-2024-07-18', // Reemplaza esto con el modelo adecuado
       messages: messages,
     };
+  }
 
-    // Convertir a JSON
+  private async getChatResponse(respModel: ResponseModelDto): Promise<any> {
     const jsonInputString = JSON.stringify(respModel);
-    const chatResponse = await this.chatGptService.sendRequestChatCompletion(
-      jsonInputString,
-    );
+    return await this.chatGptService.sendRequestChatCompletion(jsonInputString);
+  }
+
+  private validateChatResponse(chatResponse: any): void {
     if (
       !chatResponse ||
       !chatResponse.choices ||
@@ -78,33 +119,45 @@ export class BackofficeService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  private buildBotResponse(
+    idConversacion: string,
+    q: string,
+    botContent: string,
+  ): ResponseBotDto {
     const botResponse = new ResponseBotDto();
     botResponse.idConversacion = idConversacion;
     botResponse.txtConversacionUser = q;
-    botResponse.txtConversacionBot = chatResponse.choices[0].message.content;
+    botResponse.txtConversacionBot = botContent;
+    return botResponse;
+  }
+
+  private async handleConversacion(
+    messages: MessageDto[],
+    idConversacion: string,
+    q: string,
+    botResponse: ResponseBotDto,
+  ): Promise<ChatResponseDto> {
     if (messages.length === 2) {
       idConversacion = await this.conversacionesService.createConversacion(
         q,
         botResponse.txtConversacionBot,
         idConversacion,
       );
-      return {
-        status: 'Success',
-        message: null,
-        data: botResponse,
-      };
     } else {
       await this.conversacionesService.addConversacion(
         q,
         botResponse.txtConversacionBot,
         idConversacion,
       );
-      return {
-        status: 'Success',
-        message: null,
-        data: botResponse,
-      };
     }
+
+    return {
+      status: 'Success',
+      message: null,
+      data: botResponse,
+    };
   }
 
   async getAllDocuments() {
