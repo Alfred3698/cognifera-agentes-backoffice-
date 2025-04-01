@@ -143,6 +143,7 @@ export class BackofficeService {
   ): Promise<ChatResponseDto> {
     if (messages.length === 2) {
       idConversacion = await this.conversacionesService.createConversacion(
+        nameUser,
         q,
         botResponse.txtConversacionBot,
         idConversacion,
