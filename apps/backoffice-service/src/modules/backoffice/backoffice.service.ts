@@ -23,7 +23,7 @@ export class BackofficeService {
   ) {}
 
   async getChat(params: ChatRequest): Promise<ChatResponseDto> {
-    const { q } = params;
+    const { q, pushName } = params;
     const idConversacion = params.idConversacion;
     this.logger.log('int getChat with params:', idConversacion);
 
@@ -46,6 +46,7 @@ export class BackofficeService {
     );
 
     return await this.handleConversacion(
+      pushName, // Cambié nameUser a pushName
       messages,
       idConversacion,
       q,
@@ -134,6 +135,7 @@ export class BackofficeService {
   }
 
   private async handleConversacion(
+    nameUser: string,
     messages: MessageDto[],
     idConversacion: string,
     q: string,
