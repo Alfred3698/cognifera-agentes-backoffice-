@@ -11,7 +11,7 @@ import {
 
 @Injectable()
 export class ConversacionesService {
-  indexName = 'conversaciones_ami';
+  indexName = process.env.ELASTICSEARCH_INDEX_CONVERSACIONES;
   constructor(
     private readonly elasticSearchService: ElasticsearchService,
     private logger: Logger,

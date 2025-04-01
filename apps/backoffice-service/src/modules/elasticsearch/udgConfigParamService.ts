@@ -14,7 +14,7 @@ export class UdgConfigParamService {
 
   async getAllDocuments(): Promise<ConfigParamDto[]> {
     const response = await this.elasticSearchService.search(
-      'config_params_ami',
+      process.env.ELASTICSEARCH_INDEX_CONFIG_PARAM,
       {
         query: {
           match_all: {},
