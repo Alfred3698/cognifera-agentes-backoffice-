@@ -17,7 +17,6 @@ export class ChatgptService {
       'Sending request to ChatGPT API:',
       process.env.OPENAI_API_URL,
     );
-    this.logger.log('Request payload:', jsonInputString);
 
     const response = await this.httpService
       .post<ChatCompletionDto>(process.env.OPENAI_API_URL, jsonInputString, {
