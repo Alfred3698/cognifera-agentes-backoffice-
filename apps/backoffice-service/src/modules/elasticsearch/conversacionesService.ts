@@ -46,6 +46,7 @@ export class ConversacionesService {
   }
 
   async createConversacion(
+    nameUser: string,
     txtConversacionUser: string,
     txtConversacionBot: string,
     idConversacion: string,
@@ -55,7 +56,7 @@ export class ConversacionesService {
       txtConversacionBot,
     );
     const conversacionPrincipal = new ConversacionPrincipalDTO();
-
+    conversacionPrincipal.user = nameUser;
     conversacionPrincipal.idConversacion = idConversacion;
     conversacionPrincipal.timestamp = new Date().getTime();
     conversacionPrincipal.conversaciones = conversaciones;
