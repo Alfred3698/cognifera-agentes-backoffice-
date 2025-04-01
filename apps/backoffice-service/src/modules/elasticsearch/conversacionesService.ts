@@ -34,7 +34,7 @@ export class ConversacionesService {
         id: hit._id,
         idConversacion: source.idConversacion,
         user: source.user,
-        timestamp: new Date(source.timestamp),
+        timestamp: source.timestamp,
         conversaciones: source.conversaciones.map((conversacion: any) => ({
           text: conversacion.text,
           type: conversacion.type,
