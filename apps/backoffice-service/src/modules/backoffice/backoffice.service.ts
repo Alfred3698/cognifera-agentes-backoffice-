@@ -9,7 +9,7 @@ import {
   ResponseModelDto,
 } from './backoffice.dto';
 import { UdgConfigParamService } from '../elasticsearch/udgConfigParamService';
-import { ConversacionesService } from '../elasticsearch/conversacionesService';
+import { ConversacionesService } from '../elasticsearch/conversaciones.service';
 import { ChatgptService } from '../chatgpt/chatgptService';
 
 @Injectable()

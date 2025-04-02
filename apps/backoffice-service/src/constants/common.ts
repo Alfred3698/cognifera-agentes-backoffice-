@@ -1,1 +1,1 @@
-export const SERVICE_NAME = 'cebolla-service';
+export const SERVICE_NAME = 'backoffice-service';

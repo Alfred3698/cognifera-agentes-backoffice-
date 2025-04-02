@@ -7,7 +7,7 @@ import { LoggerModule } from '@b-accel-logger/index';
 import { DBModule } from '../db-module/module';
 import { ElasticsearchService } from '../elasticsearch/elasticsearch.service';
 import { UdgConfigParamService } from '../elasticsearch/udgConfigParamService';
-import { ConversacionesService } from '../elasticsearch/conversacionesService';
+import { ConversacionesService } from '../elasticsearch/conversaciones.service';
 import { ChatgptService } from '../chatgpt/chatgptService';
 /**
  *
