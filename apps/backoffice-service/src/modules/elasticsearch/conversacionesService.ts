@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import moment from 'moment';
 import { Logger } from '@b-accel-logger/logger.service';
 
 import { ElasticsearchService } from './elasticsearch.service';
@@ -8,6 +9,10 @@ import {
   ConversacionDTO,
   ConversacionPrincipalDTO,
 } from './elasticsearch.dto';
+import {
+  DashboardMetricsDto,
+  RecentActivityDto,
+} from '../dashboard/dashboard.dto';
 
 @Injectable()
 export class ConversacionesService {
@@ -129,5 +134,81 @@ export class ConversacionesService {
     }
 
     return true;
+  }
+
+  async getDashboardMetrics(): Promise<DashboardMetricsDto> {
+    const query = {
+      size: 0,
+      aggs: {
+        unique_ids: {
+          cardinality: {
+            field: 'idConversacion.keyword',
+          },
+        },
+        total_conversaciones: {
+          sum: {
+            script: {
+              source:
+                "params['_source'].containsKey('conversaciones') ? params['_source']['conversaciones'].size() : 0",
+            },
+          },
+        },
+      },
+    };
+
+    try {
+      const response = await this.elasticSearchService.search(
+        this.indexName,
+        query,
+      );
+
+      const uniqueIds = response.body.aggregations.unique_ids.value || 0;
+      const totalConversaciones =
+        response.body.aggregations.total_conversaciones.value || 0;
+
+      this.logger.log(`Unique IDs: ${uniqueIds}`);
+      this.logger.log(`Total Conversaciones: ${totalConversaciones}`);
+
+      return {
+        totalUsers: uniqueIds,
+        totalConversaciones,
+      };
+    } catch (error) {
+      this.logger.error('Error al obtener métricas del dashboard:', error);
+      throw new Error('Error al obtener métricas del dashboard');
+    }
+  }
+
+  async geyRecentActivity(): Promise<RecentActivityDto[]> {
+    const query = {
+      size: 5,
+      sort: [
+        {
+          timestamp: {
+            order: 'desc',
+          },
+        },
+      ],
+      _source: {
+        includes: ['idConversacion', 'user', 'timestamp'],
+      },
+    };
+    const response = await this.elasticSearchService.search(
+      this.indexName,
+      query,
+    );
+    if (!response.body.hits || !response.body.hits.hits) {
+      this.logger.error('La respuesta no contiene hits válidos.');
+      return [];
+    }
+
+    return response.body.hits.hits.map((hit: any) => {
+      const source = hit._source;
+      return {
+        user: source.user,
+        idConversacion: source.idConversacion,
+        timestamp: moment(source.timestamp).format('DD/M/YYYY h:mm A'),
+      };
+    });
   }
 }

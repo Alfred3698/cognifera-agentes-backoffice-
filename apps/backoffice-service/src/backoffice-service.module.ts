@@ -5,6 +5,7 @@ import { BackofficeModule } from './modules/backoffice/backoffice.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ElasticsearchService } from './modules/elasticsearch/elasticsearch.service';
 import { LoggerModule } from '@b-accel-logger/logger.module';
+import { DashBoardModule } from './modules/dashboard/dashboard.module';
 
 /**
  *
@@ -12,6 +13,7 @@ import { LoggerModule } from '@b-accel-logger/logger.module';
 @Module({
   imports: [
     BackofficeModule,
+    DashBoardModule,
     AuthModule,
     LoggerModule.forRoot({ context: 'Backoffice module' }),
     ConfigModule.forRoot({
