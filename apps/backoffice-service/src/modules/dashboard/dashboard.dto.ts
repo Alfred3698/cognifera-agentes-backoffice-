@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, Matches } from 'class-validator';
 
 export class DashboardMetricsDto {
   @ApiProperty({
@@ -46,4 +47,26 @@ export class DashboardResponseDto {
     type: [RecentActivityDto],
   })
   recentActivity: RecentActivityDto[];
+}
+
+export class GetFilteredConversationsDto {
+  @ApiProperty({
+    description: 'Fecha de inicio en formato DD-MM-YYYY',
+    example: '01-04-2025',
+  })
+  @IsString()
+  @Matches(/^\d{2}-\d{2}-\d{4}$/, {
+    message: 'startDate debe estar en el formato DD-MM-YYYY',
+  })
+  startDate: string;
+
+  @ApiProperty({
+    description: 'Fecha de fin en formato DD-MM-YYYY',
+    example: '02-04-2025',
+  })
+  @IsString()
+  @Matches(/^\d{2}-\d{2}-\d{4}$/, {
+    message: 'endDate debe estar en el formato DD-MM-YYYY',
+  })
+  endDate: string;
 }

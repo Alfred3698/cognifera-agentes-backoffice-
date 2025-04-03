@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { Logger } from '@b-accel-logger/logger.service';
 
 import { ElasticsearchService } from './elasticsearch.service';
@@ -207,8 +207,82 @@ export class ConversacionesService {
       return {
         user: source.user,
         idConversacion: source.idConversacion,
-        timestamp: moment(source.timestamp).format('DD/M/YYYY h:mm A'),
+        timestamp: moment(source.timestamp)
+          .tz('America/Mexico_City')
+          .format('DD/M/YYYY h:mm A'),
       };
     });
+  }
+  async getFilteredConversations(
+    startTimestamp: number,
+    endTimestamp: number,
+  ): Promise<any[]> {
+    const query = {
+      query: {
+        bool: {
+          must: [
+            {
+              match_all: {},
+            },
+          ],
+          filter: [
+            {
+              range: {
+                timestamp: {
+                  gte: startTimestamp, // Timestamp de inicio
+                  lte: endTimestamp, // Timestamp de fin
+                },
+              },
+            },
+          ],
+        },
+      },
+      size: 1000, // Limita los resultados a 1000 documentos
+      sort: [
+        {
+          timestamp: {
+            order: 'desc', // Orden descendente por timestamp
+          },
+        },
+      ],
+      _source: {
+        includes: ['idConversacion', 'user', 'timestamp', 'conversaciones'],
+      },
+    };
+
+    try {
+      const response = await this.elasticSearchService.search(
+        this.indexName,
+        query,
+      );
+
+      if (!response.body.hits || !response.body.hits.hits) {
+        this.logger.error('La respuesta no contiene hits válidos.');
+        return [];
+      }
+
+      // Mapeo de los resultados
+      return response.body.hits.hits.map((hit: any) => {
+        const source = hit._source;
+        return {
+          id: hit._id,
+          user: source.user,
+          idConversacion: source.idConversacion,
+          timestamp: moment(source.timestamp)
+            .tz('America/Mexico_City') // Convierte a hora local de Ciudad de México
+            .format('DD/M/YYYY h:mm A'), // Formatea la fecha
+          conversaciones: source.conversaciones.map((conversacion: any) => ({
+            text: conversacion.text,
+            type: conversacion.type,
+            timestamp: moment(conversacion.timestamp)
+              .tz('America/Mexico_City') // Convierte a hora local de Ciudad de México
+              .format('DD/M/YYYY h:mm A'), // Formatea la fecha
+          })),
+        };
+      });
+    } catch (error) {
+      this.logger.error('Error al ejecutar el query:', error);
+      throw new Error('Error al obtener las conversaciones filtradas');
+    }
   }
 }

@@ -38,6 +38,7 @@
     }
   },
   "dependencies": {
+    "@elastic/elasticsearch": "7.13",
     "@golevelup/ts-jest": "^0.3.0",
     "@nestjs/common": "^7.5.1",
     "@nestjs/config": "^0.5.0",
@@ -75,6 +76,7 @@
     "json-rules-engine": "^6.0.1",
     "jsonpath": "^1.1.1",
     "moment": "^2.29.1",
+    "moment-timezone": "^0.5.48",
     "nest": "^0.1.6",
     "nest-sftp": "^1.1.8",
     "nestjs-s3": "^1.0.1",
@@ -102,7 +104,7 @@
     "url-parse": "^1.5.10",
     "uuid": "^8.3.2",
     "ws": "^7.4.6",
-    "@elastic/elasticsearch": "7.13"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.1",
