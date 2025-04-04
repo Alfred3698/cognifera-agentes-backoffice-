@@ -45,7 +45,8 @@ export class DashboardService {
       Timestamp: conversation.timestamp,
       Conversaciones: conversation.conversaciones
         .map((c: any) => `[${c.type}] ${c.text}`)
-        .join('\n'),
+        .join('\n')
+        .slice(0, 32767), // Truncar a 32,767 caracteres
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -54,7 +55,12 @@ export class DashboardService {
 
     // Generar un nombre de archivo único usando UUID
     const filePath = `filtered_conversations_${uuidv4()}.xlsx`;
-    XLSX.writeFile(workbook, filePath);
+    try {
+      XLSX.writeFile(workbook, filePath);
+    } catch (error) {
+      this.logger.error('Error al generar el archivo Excel', error);
+      throw new Error('Error al generar el archivo Excel');
+    }
 
     this.logger.log(`Archivo Excel generado: ${filePath}`);
     return filePath;
@@ -64,6 +70,9 @@ export class DashboardService {
     startDate: string,
     endDate: string,
   ): Promise<string> {
+    this.logger.log(
+      `Obteniendo conversaciones filtradas desde ${startDate} hasta ${endDate}`,
+    );
     const filteredConversations = await this.getFilteredConversations(
       startDate,
       endDate,
