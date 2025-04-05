@@ -12,7 +12,7 @@ export class UdgConfigParamService {
     private logger: Logger,
   ) {}
 
-  async getAllDocuments(): Promise<ConfigParamDto[]> {
+  async getConfigParams(): Promise<ConfigParamDto[]> {
     const response = await this.elasticSearchService.search(
       process.env.ELASTICSEARCH_INDEX_CONFIG_PARAM,
       {
@@ -34,5 +34,16 @@ export class UdgConfigParamService {
         base_conocimiento: source.base_conocimiento,
       } as ConfigParamDto;
     });
+  }
+
+  async updateConfigParam(
+    id: string,
+    updates: Record<string, any>,
+  ): Promise<any> {
+    return await this.elasticSearchService.updateDocument(
+      process.env.ELASTICSEARCH_INDEX_CONFIG_PARAM,
+      id,
+      updates,
+    );
   }
 }

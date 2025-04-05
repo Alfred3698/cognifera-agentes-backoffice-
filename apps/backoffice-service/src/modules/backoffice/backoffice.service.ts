@@ -55,7 +55,7 @@ export class BackofficeService {
   }
 
   private async getBaseConocimiento(): Promise<string> {
-    const existingReglas = await this.getAllDocuments();
+    const existingReglas = await this.getConfigParams();
     this.logger.log(
       'int getBaseConocimiento with params:',
       JSON.stringify(existingReglas),
@@ -167,7 +167,29 @@ export class BackofficeService {
     };
   }
 
-  async getAllDocuments() {
-    return await this.udgConfigParamService.getAllDocuments();
+  async getConfigParams() {
+    return await this.udgConfigParamService.getConfigParams();
+  }
+  async updateConfigParam(
+    id: string,
+    updates: Record<string, any>,
+  ): Promise<any> {
+    try {
+      const response = await this.udgConfigParamService.updateConfigParam(
+        id,
+        updates,
+      );
+
+      return {
+        status: 'Success',
+        message: 'Configuración actualizada exitosamente.',
+        data: response.body,
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Error al actualizar la configuración: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

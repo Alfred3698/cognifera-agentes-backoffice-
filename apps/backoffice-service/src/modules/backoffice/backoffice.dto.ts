@@ -6,6 +6,7 @@ import {
   ArrayNotEmpty,
   Max,
   Min,
+  IsOptional,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -128,4 +129,55 @@ export class ResponseBotDto {
   })
   @IsString()
   txtConversacionBot: string;
+}
+
+export class UpdateConfigParamDto {
+  @ApiProperty({
+    description: 'Máximo de tokens permitidos',
+    example: 400000000,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  limit_max_query_tokens?: number;
+
+  @ApiProperty({
+    description: 'Máximo de caracteres permitidos',
+    example: 500,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  limit_max_caracters?: number;
+
+  @ApiProperty({
+    description: 'Mínimo de caracteres permitidos',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  limit_min_caracters?: number;
+
+  @ApiProperty({
+    description: 'Tiempo entre conversaciones',
+    example: 10,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  limit_time_between_conversations?: number;
+
+  @ApiProperty({
+    description: 'Base de conocimiento',
+    example: [
+      'Eres un asistente virtual...',
+      '¿Quién es Ana María Ibarra Olguín?',
+    ],
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  base_conocimiento?: string[];
 }
