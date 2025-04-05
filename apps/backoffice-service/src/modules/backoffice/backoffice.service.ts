@@ -56,6 +56,10 @@ export class BackofficeService {
 
   private async getBaseConocimiento(): Promise<string> {
     const existingReglas = await this.getAllDocuments();
+    this.logger.log(
+      'int getBaseConocimiento with params:',
+      JSON.stringify(existingReglas),
+    );
     const reglasToUpdate = existingReglas[0];
     return reglasToUpdate.base_conocimiento.join('');
   }
