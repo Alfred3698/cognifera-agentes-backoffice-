@@ -14,12 +14,12 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ChatRequest, UpdateConfigParamDto } from './backoffice.dto';
 
 @ApiTags(SERVICE_NAME)
-@Controller('api/v2/conversacion/')
+@Controller('api/v2/conversacion')
 //@UseGuards(JwtAuthGuard)
 export class BackofficeController {
   constructor(private readonly backofficeService: BackofficeService) {}
 
-  @Post()
+  @Post('chat')
   async getChat(@Body() params: ChatRequest) {
     return await this.backofficeService.getChat(params);
   }
