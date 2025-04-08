@@ -12,6 +12,13 @@ const logger = new Logger({ context: 'Backoffice Service' });
 async function bootstrap() {
   const app = await NestFactory.create(BackofficeServiceModule);
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
   registerSwagger(app, SERVICE_NAME);
   await app.startAllMicroservicesAsync();
   await app.listen(process.env.REPORT_SERVICE_PORT);
