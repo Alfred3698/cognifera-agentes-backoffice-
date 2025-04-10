@@ -7,8 +7,11 @@ import {
   Max,
   Min,
   IsOptional,
+  isBoolean,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { ConfigParamDto } from '../elasticsearch/elasticsearch.dto';
 
 export class ChatRequest {
   @ApiProperty({
@@ -133,51 +136,69 @@ export class ResponseBotDto {
 
 export class UpdateConfigParamDto {
   @ApiProperty({
-    description: 'Máximo de tokens permitidos',
-    example: 400000000,
-    required: false,
+    description: 'ID del documento',
+    example: '1',
   })
-  @IsOptional()
-  @IsNumber()
-  limit_max_query_tokens?: number;
+  @IsString()
+  id: string;
 
   @ApiProperty({
-    description: 'Máximo de caracteres permitidos',
-    example: 500,
-    required: false,
+    description: 'Límite máximo de tokens de consulta',
+    example: 100,
   })
-  @IsOptional()
   @IsNumber()
-  limit_max_caracters?: number;
+  limitMaxQueryTokens: number;
 
   @ApiProperty({
-    description: 'Mínimo de caracteres permitidos',
-    example: 0,
-    required: false,
+    description: 'Límite máximo de caracteres',
+    example: 1000,
   })
-  @IsOptional()
   @IsNumber()
-  limit_min_caracters?: number;
+  limitMaxCaracters: number;
 
   @ApiProperty({
-    description: 'Tiempo entre conversaciones',
+    description: 'Límite mínimo de caracteres',
     example: 10,
-    required: false,
   })
-  @IsOptional()
   @IsNumber()
-  limit_time_between_conversations?: number;
+  limitMinCaracters: number;
 
   @ApiProperty({
-    description: 'Base de conocimiento',
-    example: [
-      'Eres un asistente virtual...',
-      '¿Quién es Ana María Ibarra Olguín?',
-    ],
-    required: false,
+    description: 'Límite de tiempo entre conversaciones',
+    example: 60,
   })
-  @IsOptional()
+  @IsNumber()
+  limitTimeBetweenConversations: number;
+
+  @ApiProperty({
+    description: 'Límite máximo de preguntas por día',
+    example: 60,
+  })
+  @IsNumber()
+  limitMaxQuestionsPerDay: number;
+}
+
+export class UpdateGenetic {
+  @ApiProperty({
+    description: 'ID del documento',
+    example: '1',
+  })
+  @IsString()
+  id: string;
+
+  @ApiProperty({
+    description: 'Array de contextos, puede ser uno o más',
+    example: ['contexto1', 'contexto2'],
+  })
   @IsArray()
-  @IsString({ each: true })
-  base_conocimiento?: string[];
+  contexto: string[];
+}
+
+export class updateConfigRestricciones extends UpdateGenetic {
+  @ApiProperty({
+    description: 'contextos permitidos',
+    example: [true, false],
+  })
+  @IsBoolean()
+  permitido: boolean;
 }

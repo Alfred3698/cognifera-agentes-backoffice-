@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsArray,
+  IsOptional,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ConfigParamDto {
@@ -6,37 +12,64 @@ export class ConfigParamDto {
     description: 'ID del documento',
     example: '1',
   })
+  @IsString()
   id: string;
 
   @ApiProperty({
     description: 'Límite máximo de tokens de consulta',
     example: 100,
   })
-  limit_max_query_tokens: number;
+  @IsNumber()
+  limitMaxQueryTokens: number;
 
   @ApiProperty({
     description: 'Límite máximo de caracteres',
     example: 1000,
   })
-  limit_max_caracters: number;
+  @IsNumber()
+  limitMaxCaracters: number;
 
   @ApiProperty({
     description: 'Límite mínimo de caracteres',
     example: 10,
   })
-  limit_min_caracters: number;
+  @IsNumber()
+  limitMinCaracters: number;
 
   @ApiProperty({
     description: 'Límite de tiempo entre conversaciones',
     example: 60,
   })
-  limit_time_between_conversations: number;
+  @IsNumber()
+  limitTimeBetweenConversations: number;
+
+  @ApiProperty({
+    description: 'Límite máximo de preguntas por día',
+    example: 60,
+  })
+  @IsNumber()
+  limitMaxQuestionsPerDay: number;
 
   @ApiProperty({
     description: 'Base de conocimiento',
     example: ['conocimiento1', 'conocimiento2'],
   })
-  base_conocimiento: string[];
+  @IsArray()
+  @IsOptional()
+  baseConocimiento: string[];
+
+  entrenamiento: EntrenamientoDto;
+}
+
+export interface EntrenamientoDto {
+  contextoGlobal: string[];
+  restricciones: RestriccionesDto;
+  preguntasYRespuestas: string[];
+}
+
+export interface RestriccionesDto {
+  permitido: any[];
+  denegado: any[];
 }
 
 export class ConversacionDTO {

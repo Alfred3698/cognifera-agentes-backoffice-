@@ -11,10 +11,15 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SERVICE_NAME } from '../../constants/common';
 import { BackofficeService } from './backoffice.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ChatRequest, UpdateConfigParamDto } from './backoffice.dto';
+import {
+  ChatRequest,
+  UpdateConfigParamDto,
+  updateConfigRestricciones,
+  UpdateGenetic,
+} from './backoffice.dto';
 
 @ApiTags(SERVICE_NAME)
-@Controller('api/v2/conversacion')
+@Controller('api/conversacion')
 //@UseGuards(JwtAuthGuard)
 export class BackofficeController {
   constructor(private readonly backofficeService: BackofficeService) {}
@@ -39,7 +44,7 @@ export class BackofficeController {
     description: 'Error interno del servidor.',
   })
   async getConfigParams(): Promise<any> {
-    return await this.backofficeService.getConfigParams();
+    return await this.backofficeService._getConfigParams();
   }
 
   @ApiOperation({
@@ -64,11 +69,30 @@ export class BackofficeController {
     description: 'Datos para actualizar el documento de configuración',
     type: UpdateConfigParamDto,
   })
-  @Patch('config-params/:id')
-  async updateConfigParam(
-    @Param('id') id: string,
-    @Body() updates: UpdateConfigParamDto,
+  @Patch('config-params')
+  async updateConfigParam(@Body() updates: UpdateConfigParamDto): Promise<any> {
+    return await this.backofficeService.updateConfigParam(updates);
+  }
+
+  @Get('config-params/entrenamiento')
+  async getConfigEntrenamiento(): Promise<any> {
+    return await this.backofficeService.getConfigEntrenamiento();
+  }
+
+  @Patch('config-params/entrenamiento/global')
+  async updateConfigContextoGlobal(@Body() data: UpdateGenetic): Promise<any> {
+    return await this.backofficeService.updateConfigContextoGlobal(data);
+  }
+
+  @Patch('config-params/entrenamiento/restricciones')
+  async updateConfigRestricciones(
+    @Body() data: updateConfigRestricciones,
   ): Promise<any> {
-    return await this.backofficeService.updateConfigParam(id, updates);
+    return await this.backofficeService.updateConfigRestricciones(data);
+  }
+
+  @Patch('config-params/entrenamiento/preguntas-y-respuestas')
+  async updateConfigPreguntas(@Body() data: UpdateGenetic): Promise<any> {
+    return await this.backofficeService.updateConfigPreguntas(data);
   }
 }

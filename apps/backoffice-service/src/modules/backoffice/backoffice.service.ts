@@ -7,10 +7,14 @@ import {
   MessageDto,
   ResponseBotDto,
   ResponseModelDto,
+  UpdateConfigParamDto,
+  updateConfigRestricciones,
+  UpdateGenetic,
 } from './backoffice.dto';
 import { UdgConfigParamService } from '../elasticsearch/udgConfigParamService';
 import { ConversacionesService } from '../elasticsearch/conversaciones.service';
 import { ChatgptService } from '../chatgpt/chatgptService';
+import e from 'express';
 
 @Injectable()
 export class BackofficeService {
@@ -61,7 +65,7 @@ export class BackofficeService {
       JSON.stringify(existingReglas),
     );
     const reglasToUpdate = existingReglas[0];
-    return reglasToUpdate.base_conocimiento.join('');
+    return reglasToUpdate.baseConocimiento.join('');
   }
 
   private async buildInitialMessages(
@@ -170,20 +174,209 @@ export class BackofficeService {
   async getConfigParams() {
     return await this.udgConfigParamService.getConfigParams();
   }
-  async updateConfigParam(
-    id: string,
-    updates: Record<string, any>,
-  ): Promise<any> {
+  async _getConfigParams() {
+    const config = await this.udgConfigParamService.getConfigParams();
+    config.forEach((item) => {
+      delete item.baseConocimiento;
+      return;
+    });
+    return config[0];
+  }
+
+  async getConfigEntrenamiento() {
+    const config = await this.udgConfigParamService.getConfigParams();
+    return { id: config[0].id, entrenamiento: config[0].entrenamiento };
+  }
+
+  async updateConfigParam(updates: UpdateConfigParamDto): Promise<any> {
     try {
-      const response = await this.udgConfigParamService.updateConfigParam(
-        id,
-        updates,
+      const configParams = await this.udgConfigParamService.getConfigParams(
+        updates.id,
+      );
+      if (!configParams || configParams.length === 0) {
+        this.logger.error(
+          `Configuración no encontrada para el ID: ${updates.id}`,
+        );
+        throw new HttpException(
+          'Configuración no encontrada.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const updateElasticSearch = {
+        limit_max_query_tokens: updates.limitMaxQueryTokens,
+        limit_max_caracters: updates.limitMaxCaracters,
+        limit_min_caracters: updates.limitMinCaracters,
+        limit_time_between_conversations: updates.limitTimeBetweenConversations,
+        limit_Max_questions_per_day: updates.limitMaxQuestionsPerDay,
+        base_conocimiento: configParams[0].baseConocimiento,
+        id: updates.id,
+      };
+      await this.udgConfigParamService.updateConfigParam(
+        updates.id,
+        updateElasticSearch,
       );
 
       return {
         status: 'Success',
         message: 'Configuración actualizada exitosamente.',
-        data: response.body,
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Error al actualizar la configuración: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateConfigContextoGlobal(data: UpdateGenetic): Promise<any> {
+    try {
+      const configParams = await this.udgConfigParamService.getConfigParams(
+        data.id,
+      );
+      if (!configParams || configParams.length === 0) {
+        this.logger.error(`Configuración no encontrada para el ID: ${data.id}`);
+        throw new HttpException(
+          'Configuración no encontrada.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const updateElasticSearch = {
+        limit_max_query_tokens: configParams[0].limitMaxQueryTokens,
+        limit_max_caracters: configParams[0].limitMaxCaracters,
+        limit_min_caracters: configParams[0].limitMinCaracters,
+        limit_time_between_conversations:
+          configParams[0].limitTimeBetweenConversations,
+        limit_Max_questions_per_day: configParams[0].limitMaxQuestionsPerDay,
+        base_conocimiento: configParams[0].baseConocimiento,
+        id: data.id,
+        entrenamiento: {
+          contexto_global: data.contexto,
+          restricciones: {
+            permitido:
+              configParams[0].entrenamiento?.restricciones?.permitido ?? [],
+            denegado:
+              configParams[0].entrenamiento?.restricciones?.denegado ?? [],
+          },
+          preguntasYRespuestas:
+            configParams[0].entrenamiento?.preguntasYRespuestas ?? [], // Mapeo de preguntas_y_respuestas
+        },
+      };
+      await this.udgConfigParamService.updateConfigParam(
+        data.id,
+        updateElasticSearch,
+      );
+
+      return {
+        status: 'Success',
+        message: 'Configuración actualizada exitosamente.',
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Error al actualizar la configuración: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateConfigRestricciones(
+    data: updateConfigRestricciones,
+  ): Promise<any> {
+    try {
+      const { permitido } = data;
+      const configParams = await this.udgConfigParamService.getConfigParams(
+        data.id,
+      );
+      if (!configParams || configParams.length === 0) {
+        this.logger.error(`Configuración no encontrada para el ID: ${data.id}`);
+        throw new HttpException(
+          'Configuración no encontrada.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const updateElasticSearch = {
+        limit_max_query_tokens: configParams[0].limitMaxQueryTokens,
+        limit_max_caracters: configParams[0].limitMaxCaracters,
+        limit_min_caracters: configParams[0].limitMinCaracters,
+        limit_time_between_conversations:
+          configParams[0].limitTimeBetweenConversations,
+        limit_Max_questions_per_day: configParams[0].limitMaxQuestionsPerDay,
+        base_conocimiento: configParams[0].baseConocimiento,
+        id: data.id,
+        entrenamiento: {
+          contexto_global: configParams[0].entrenamiento?.contextoGlobal ?? [],
+          restricciones: {
+            permitido: permitido
+              ? data.contexto
+              : configParams[0].entrenamiento?.restricciones?.permitido ?? [],
+            denegado: !permitido
+              ? data.contexto
+              : configParams[0].entrenamiento?.restricciones?.denegado ?? [],
+          },
+          preguntasYRespuestas:
+            configParams[0].entrenamiento?.preguntasYRespuestas ?? [], // Mapeo de preguntas_y_respuestas
+        },
+      };
+      await this.udgConfigParamService.updateConfigParam(
+        data.id,
+        updateElasticSearch,
+      );
+
+      return {
+        status: 'Success',
+        message: 'Configuración actualizada exitosamente.',
+      };
+    } catch (error) {
+      throw new HttpException(
+        `Error al actualizar la configuración: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateConfigPreguntas(data: UpdateGenetic): Promise<any> {
+    try {
+      const configParams = await this.udgConfigParamService.getConfigParams(
+        data.id,
+      );
+      if (!configParams || configParams.length === 0) {
+        this.logger.error(`Configuración no encontrada para el ID: ${data.id}`);
+        throw new HttpException(
+          'Configuración no encontrada.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const updateElasticSearch = {
+        limit_max_query_tokens: configParams[0].limitMaxQueryTokens,
+        limit_max_caracters: configParams[0].limitMaxCaracters,
+        limit_min_caracters: configParams[0].limitMinCaracters,
+        limit_time_between_conversations:
+          configParams[0].limitTimeBetweenConversations,
+        limit_Max_questions_per_day: configParams[0].limitMaxQuestionsPerDay,
+        base_conocimiento: configParams[0].baseConocimiento,
+        id: data.id,
+        entrenamiento: {
+          contexto_global: data.contexto,
+          restricciones: {
+            permitido:
+              configParams[0].entrenamiento?.restricciones?.permitido ?? [],
+            denegado:
+              configParams[0].entrenamiento?.restricciones?.denegado ?? [],
+          },
+          preguntas_y_respuestas: data.contexto,
+        },
+      };
+      await this.udgConfigParamService.updateConfigParam(
+        data.id,
+        updateElasticSearch,
+      );
+
+      return {
+        status: 'Success',
+        message: 'Configuración actualizada exitosamente.',
       };
     } catch (error) {
       throw new HttpException(
