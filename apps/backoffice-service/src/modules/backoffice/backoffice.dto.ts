@@ -9,6 +9,7 @@ import {
   IsOptional,
   isBoolean,
   IsBoolean,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ConfigParamDto } from '../elasticsearch/elasticsearch.dto';
@@ -201,4 +202,36 @@ export class updateConfigRestricciones extends UpdateGenetic {
   })
   @IsBoolean()
   permitido: boolean;
+}
+
+export class PreguntasYRespuestasDto {
+  @ApiProperty({
+    description: 'Array de preguntas, puede ser uno o más',
+    example: 'contexto1',
+  })
+  preguntas: string;
+
+  @ApiProperty({
+    description: 'Array de respuestas, puede ser uno o más',
+    example: 'contexto1',
+  })
+  @IsArray()
+  respuestas: string;
+}
+export class updateConfigPreguntasYRespuestas {
+  @ApiProperty({
+    description: 'ID del documento',
+    example: '1',
+  })
+  @IsString()
+  id: string;
+
+  @ApiProperty({
+    description: 'Array de preguntas y respuestas',
+    type: [PreguntasYRespuestasDto],
+  })
+  @IsArray()
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true }) // Valida cada elemento del array
+  preguntasYRespuestas: PreguntasYRespuestasDto[];
 }

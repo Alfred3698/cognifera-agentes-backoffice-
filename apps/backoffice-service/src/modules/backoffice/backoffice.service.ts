@@ -8,13 +8,14 @@ import {
   ResponseBotDto,
   ResponseModelDto,
   UpdateConfigParamDto,
+  updateConfigPreguntasYRespuestas,
   updateConfigRestricciones,
   UpdateGenetic,
 } from './backoffice.dto';
 import { UdgConfigParamService } from '../elasticsearch/udgConfigParamService';
 import { ConversacionesService } from '../elasticsearch/conversaciones.service';
 import { ChatgptService } from '../chatgpt/chatgptService';
-import e from 'express';
+import e, { response } from 'express';
 
 @Injectable()
 export class BackofficeService {
@@ -259,8 +260,8 @@ export class BackofficeService {
             denegado:
               configParams[0].entrenamiento?.restricciones?.denegado ?? [],
           },
-          preguntasYRespuestas:
-            configParams[0].entrenamiento?.preguntasYRespuestas ?? [], // Mapeo de preguntas_y_respuestas
+          preguntas_y_respuestas:
+            configParams[0].entrenamiento.preguntasYRespuestas,
         },
       };
       await this.udgConfigParamService.updateConfigParam(
@@ -315,8 +316,8 @@ export class BackofficeService {
               ? data.contexto
               : configParams[0].entrenamiento?.restricciones?.denegado ?? [],
           },
-          preguntasYRespuestas:
-            configParams[0].entrenamiento?.preguntasYRespuestas ?? [], // Mapeo de preguntas_y_respuestas
+          preguntas_y_respuestas:
+            configParams[0].entrenamiento.preguntasYRespuestas,
         },
       };
       await this.udgConfigParamService.updateConfigParam(
@@ -336,7 +337,9 @@ export class BackofficeService {
     }
   }
 
-  async updateConfigPreguntas(data: UpdateGenetic): Promise<any> {
+  async updateConfigPreguntas(
+    data: updateConfigPreguntasYRespuestas,
+  ): Promise<any> {
     try {
       const configParams = await this.udgConfigParamService.getConfigParams(
         data.id,
@@ -359,14 +362,14 @@ export class BackofficeService {
         base_conocimiento: configParams[0].baseConocimiento,
         id: data.id,
         entrenamiento: {
-          contexto_global: data.contexto,
+          contexto_global: configParams[0].entrenamiento?.contextoGlobal ?? [],
           restricciones: {
             permitido:
               configParams[0].entrenamiento?.restricciones?.permitido ?? [],
             denegado:
               configParams[0].entrenamiento?.restricciones?.denegado ?? [],
           },
-          preguntas_y_respuestas: data.contexto,
+          preguntas_y_respuestas: data.preguntasYRespuestas,
         },
       };
       await this.udgConfigParamService.updateConfigParam(

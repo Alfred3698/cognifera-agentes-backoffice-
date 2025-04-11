@@ -61,15 +61,20 @@ export class ConfigParamDto {
   entrenamiento: EntrenamientoDto;
 }
 
-export interface EntrenamientoDto {
+export class EntrenamientoDto {
   contextoGlobal: string[];
   restricciones: RestriccionesDto;
-  preguntasYRespuestas: string[];
+  preguntasYRespuestas: PreguntasYRespuestasDto[];
 }
 
-export interface RestriccionesDto {
+export class RestriccionesDto {
   permitido: any[];
   denegado: any[];
+}
+
+export class PreguntasYRespuestasDto {
+  preguntas: string;
+  respuestas: string;
 }
 
 export class ConversacionDTO {

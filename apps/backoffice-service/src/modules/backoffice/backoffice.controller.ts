@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   ChatRequest,
   UpdateConfigParamDto,
+  updateConfigPreguntasYRespuestas,
   updateConfigRestricciones,
   UpdateGenetic,
 } from './backoffice.dto';
@@ -92,7 +93,9 @@ export class BackofficeController {
   }
 
   @Patch('config-params/entrenamiento/preguntas-y-respuestas')
-  async updateConfigPreguntas(@Body() data: UpdateGenetic): Promise<any> {
+  async updateConfigPreguntas(
+    @Body() data: updateConfigPreguntasYRespuestas,
+  ): Promise<any> {
     return await this.backofficeService.updateConfigPreguntas(data);
   }
 }

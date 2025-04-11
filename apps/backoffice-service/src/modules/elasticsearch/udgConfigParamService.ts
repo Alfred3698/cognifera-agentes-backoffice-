@@ -45,7 +45,7 @@ export class UdgConfigParamService {
             denegado: source.entrenamiento?.restricciones?.denegado ?? [],
           },
           preguntasYRespuestas:
-            source.entrenamiento?.preguntas_y_respuestas ?? [], // Mapeo de preguntas_y_respuestas
+            source.entrenamiento?.preguntas_y_respuestas ?? [],
         },
       } as ConfigParamDto;
     });
