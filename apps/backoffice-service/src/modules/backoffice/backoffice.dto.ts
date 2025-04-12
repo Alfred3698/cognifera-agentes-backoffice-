@@ -198,7 +198,7 @@ export class UpdateGenetic {
 export class updateConfigRestricciones extends UpdateGenetic {
   @ApiProperty({
     description: 'contextos permitidos',
-    example: [true, false],
+    example: true,
   })
   @IsBoolean()
   permitido: boolean;

@@ -179,6 +179,7 @@ export class BackofficeService {
     const config = await this.udgConfigParamService.getConfigParams();
     config.forEach((item) => {
       delete item.baseConocimiento;
+      delete item.entrenamiento;
       return;
     });
     return config[0];
