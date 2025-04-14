@@ -15,7 +15,8 @@ import {
 import { UdgConfigParamService } from '../elasticsearch/udgConfigParamService';
 import { ConversacionesService } from '../elasticsearch/conversaciones.service';
 import { ChatgptService } from '../chatgpt/chatgptService';
-import e, { response } from 'express';
+import moment from 'moment-timezone';
+import { MAX_QUESTIONS_PER_DAY } from '../../constants/common';
 
 @Injectable()
 export class BackofficeService {
@@ -31,13 +32,31 @@ export class BackofficeService {
     const { q, pushName } = params;
     const idConversacion = params.idConversacion;
     this.logger.log('int getChat with params:', idConversacion);
-
+    const { questionCount } =
+      await this.conversacionesService.getConversationQuestionsCountByDay(
+        idConversacion,
+        moment().format('YYYY-MM-DD'),
+      );
     const baseConocimiento = await this.getBaseConocimiento();
     const messages = await this.buildInitialMessages(
       baseConocimiento,
       q,
       idConversacion,
     );
+    if (questionCount >= MAX_QUESTIONS_PER_DAY) {
+      const botResponse = new ResponseBotDto();
+      botResponse.idConversacion = idConversacion;
+      botResponse.txtConversacionUser = q;
+      botResponse.txtConversacionBot =
+        'Lo siento, has alcanzado el límite de preguntas por día. Por favor, intenta nuevamente mañana.';
+      return await this.handleConversacion(
+        pushName,
+        messages,
+        idConversacion,
+        q,
+        botResponse,
+      );
+    }
 
     const respModel = this.buildResponseModel(messages);
     const chatResponse = await this.getChatResponse(respModel);

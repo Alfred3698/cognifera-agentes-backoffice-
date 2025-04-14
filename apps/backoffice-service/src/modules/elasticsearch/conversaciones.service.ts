@@ -285,4 +285,60 @@ export class ConversacionesService {
       throw new Error('Error al obtener las conversaciones filtradas');
     }
   }
+
+  async getConversationQuestionsCountByDay(
+    id: string,
+    date: string, // Fecha en formato 'YYYY-MM-DD'
+  ): Promise<{ id: string; questionCount: number }> {
+    // Convertir la fecha proporcionada al inicio y fin del día en formato timestamp
+    const startOfDay = moment(date, 'YYYY-MM-DD').startOf('day').valueOf();
+    const endOfDay = moment(date, 'YYYY-MM-DD').endOf('day').valueOf();
+
+    const response = await this.elasticSearchService.search(this.indexName, {
+      query: {
+        bool: {
+          must: [
+            {
+              ids: {
+                values: [id],
+              },
+            },
+          ],
+          filter: [
+            {
+              range: {
+                timestamp: {
+                  gte: startOfDay,
+                  lte: endOfDay,
+                },
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    if (!response.body.hits || !response.body.hits.hits.length) {
+      this.logger.error(
+        `No se encontró ninguna conversación con el ID: ${id} para la fecha: ${date}`,
+      );
+      throw new Error(
+        `No se encontró ninguna conversación con el ID: ${id} para la fecha: ${date}`,
+      );
+    }
+
+    const source = response.body.hits.hits[0]._source;
+
+    const questionCount = source.conversaciones.filter(
+      (conversacion: any) =>
+        conversacion.type === 'question' &&
+        conversacion.timestamp >= startOfDay &&
+        conversacion.timestamp <= endOfDay,
+    ).length;
+
+    return {
+      id: source.id,
+      questionCount,
+    };
+  }
 }
