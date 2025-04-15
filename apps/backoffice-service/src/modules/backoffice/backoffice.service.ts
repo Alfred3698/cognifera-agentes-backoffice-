@@ -43,7 +43,10 @@ export class BackofficeService {
       q,
       idConversacion,
     );
-    if (questionCount >= MAX_QUESTIONS_PER_DAY) {
+    const config = await this.getConfigParams();
+    const limitMaxQuestionsPerDay =
+      config[0].limitMaxQuestionsPerDay ?? MAX_QUESTIONS_PER_DAY;
+    if (questionCount >= limitMaxQuestionsPerDay) {
       const botResponse = new ResponseBotDto();
       botResponse.idConversacion = idConversacion;
       botResponse.txtConversacionUser = q;
