@@ -37,30 +37,31 @@ export class BackofficeService {
         idConversacion,
         moment().format('YYYY-MM-DD'),
       );
+
+    const config = await this.getConfigParams();
+    const limitMaxQuestionsPerDay =
+      config[0].limitMaxQuestionsPerDay ?? MAX_QUESTIONS_PER_DAY;
+    if (questionCount >= limitMaxQuestionsPerDay) {
+      this.logger.log(
+        `Límite de preguntas alcanzado para el día: ${questionCount} - ${idConversacion}`,
+      );
+      const botResponse = new ResponseBotDto();
+      botResponse.idConversacion = idConversacion;
+      botResponse.txtConversacionUser = q;
+      botResponse.txtConversacionBot =
+        'Lo siento, has alcanzado el límite de preguntas por día. Por favor, intenta nuevamente mañana.';
+      return {
+        status: 'Success',
+        message: null,
+        data: botResponse,
+      };
+    }
     const baseConocimiento = await this.getBaseConocimiento();
     const messages = await this.buildInitialMessages(
       baseConocimiento,
       q,
       idConversacion,
     );
-    const config = await this.getConfigParams();
-    const limitMaxQuestionsPerDay =
-      config[0].limitMaxQuestionsPerDay ?? MAX_QUESTIONS_PER_DAY;
-    if (questionCount >= limitMaxQuestionsPerDay) {
-      const botResponse = new ResponseBotDto();
-      botResponse.idConversacion = idConversacion;
-      botResponse.txtConversacionUser = q;
-      botResponse.txtConversacionBot =
-        'Lo siento, has alcanzado el límite de preguntas por día. Por favor, intenta nuevamente mañana.';
-      return await this.handleConversacion(
-        pushName,
-        messages,
-        idConversacion,
-        q,
-        botResponse,
-      );
-    }
-
     const respModel = this.buildResponseModel(messages);
     const chatResponse = await this.getChatResponse(respModel);
 
