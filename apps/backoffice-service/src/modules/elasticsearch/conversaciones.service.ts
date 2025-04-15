@@ -319,12 +319,7 @@ export class ConversacionesService {
     });
 
     if (!response.body.hits || !response.body.hits.hits.length) {
-      this.logger.error(
-        `No se encontró ninguna conversación con el ID: ${id} para la fecha: ${date}`,
-      );
-      throw new Error(
-        `No se encontró ninguna conversación con el ID: ${id} para la fecha: ${date}`,
-      );
+      return { id, questionCount: 0 };
     }
 
     const source = response.body.hits.hits[0]._source;
