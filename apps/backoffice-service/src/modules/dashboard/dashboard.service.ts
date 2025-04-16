@@ -3,7 +3,7 @@ import { Logger } from '@b-accel-logger/logger.service';
 import moment from 'moment';
 import * as XLSX from 'xlsx';
 import { ConversacionesService } from '../elasticsearch/conversaciones.service';
-
+import * as ExcelJS from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { DashboardResponseDto } from './dashboard.dto';
 
@@ -36,36 +36,54 @@ export class DashboardService {
     return filteredConversations;
   }
 
-  async generateExcelFromConversations(
-    filteredConversations: any[],
-  ): Promise<string> {
-    const data = filteredConversations.map((conversation) => ({
-      Usuario: conversation.user,
-      ID_Conversacion: conversation.idConversacion,
-      Timestamp: conversation.timestamp,
-      Conversaciones: conversation.conversaciones
-        .map((c: any) => `[${c.type}] ${c.text}`)
-        .join('\n')
-        .slice(0, 32767), // Truncar a 32,767 caracteres
-    }));
+  async generateStyledExcel(filteredConversations: any[]): Promise<string> {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Conversaciones');
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Conversaciones');
+    // Cabeceras
+    worksheet.columns = [
+      { header: 'fecha', key: 'fecha', width: 20 },
+      { header: 'usuario', key: 'usuario', width: 25 },
+      { header: 'pregunta', key: 'pregunta', width: 60 },
+      { header: 'respuesta', key: 'respuesta', width: 80 },
+    ];
 
-    // Generar un nombre de archivo único usando UUID
-    const filePath = `filtered_conversations_${uuidv4()}.xlsx`;
-    try {
-      XLSX.writeFile(workbook, filePath);
-    } catch (error) {
-      this.logger.error('Error al generar el archivo Excel', error);
-      throw new Error('Error al generar el archivo Excel');
-    }
+    // Estilo azul a la cabecera
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '002060' }, // Azul oscuro
+      };
+      cell.font = { color: { argb: 'FFFFFF' }, bold: true }; // Texto blanco y en negrita
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    // Agregar datos
+    filteredConversations.forEach((conversation) => {
+      const { user, timestamp, conversaciones } = conversation;
+
+      conversaciones.forEach((c: any, i: number) => {
+        if (c.type === 'question') {
+          const nextAnswer = conversaciones[i + 1];
+          worksheet.addRow({
+            fecha: timestamp,
+            usuario: user,
+            pregunta: c.text,
+            respuesta: nextAnswer?.type === 'answer' ? nextAnswer.text : '',
+          });
+        }
+      });
+    });
+
+    const filePath = `conversaciones_${moment().format(
+      'DD-MM-YYYY',
+    )}_${uuidv4()}.xlsx`;
+    await workbook.xlsx.writeFile(filePath);
 
     this.logger.log(`Archivo Excel generado: ${filePath}`);
     return filePath;
   }
-
   async getFilteredConversationsAndGenerateExcel(
     startDate: string,
     endDate: string,
@@ -78,9 +96,7 @@ export class DashboardService {
       endDate,
     );
 
-    const excelFilePath = await this.generateExcelFromConversations(
-      filteredConversations,
-    );
+    const excelFilePath = await this.generateStyledExcel(filteredConversations);
 
     return excelFilePath;
   }
