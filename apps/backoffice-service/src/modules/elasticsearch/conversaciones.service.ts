@@ -63,7 +63,9 @@ export class ConversacionesService {
     const conversacionPrincipal = new ConversacionPrincipalDTO();
     conversacionPrincipal.user = nameUser;
     conversacionPrincipal.idConversacion = idConversacion;
-    conversacionPrincipal.timestamp = new Date().getTime();
+    conversacionPrincipal.timestamp = moment()
+      .tz('America/Mexico_City')
+      .valueOf();
     conversacionPrincipal.conversaciones = conversaciones;
     const documento = await this.elasticSearchService.indexDocument(
       this.indexName,
@@ -94,14 +96,14 @@ export class ConversacionesService {
       text: txtConversacionUser,
       type: 'question',
       referencias: null,
-      timestamp: new Date().getTime(),
+      timestamp: moment().tz('America/Mexico_City').valueOf(),
     });
 
     conversaciones.push({
       text: txtConversacionBot,
       type: 'answer',
       referencias: null,
-      timestamp: new Date().getTime(),
+      timestamp: moment().tz('America/Mexico_City').valueOf(),
     });
     return conversaciones;
   }
@@ -120,7 +122,9 @@ export class ConversacionesService {
     conversacionPrincipal.conversaciones.push(...conversaciones);
 
     const idDoc = conversacionPrincipal.id;
-
+    conversacionPrincipal.timestamp = moment()
+      .tz('America/Mexico_City')
+      .valueOf();
     try {
       await this.elasticSearchService.updateDocument(
         this.indexName,
@@ -274,9 +278,7 @@ export class ConversacionesService {
           conversaciones: source.conversaciones.map((conversacion: any) => ({
             text: conversacion.text,
             type: conversacion.type,
-            timestamp: moment(conversacion.timestamp)
-              .tz('America/Mexico_City') // Convierte a hora local de Ciudad de México
-              .format('DD/M/YYYY h:mm A'), // Formatea la fecha
+            timestamp: conversacion.timestamp,
           })),
         };
       });
@@ -291,9 +293,16 @@ export class ConversacionesService {
     date: string, // Fecha en formato 'YYYY-MM-DD'
   ): Promise<{ id: string; questionCount: number }> {
     // Convertir la fecha proporcionada al inicio y fin del día en formato timestamp
-    const startOfDay = moment(date, 'YYYY-MM-DD').startOf('day').valueOf();
-    const endOfDay = moment(date, 'YYYY-MM-DD').endOf('day').valueOf();
-
+    const startOfDay = moment
+      .tz(date, 'YYYY-MM-DD', 'America/Mexico_City')
+      .startOf('day')
+      .valueOf();
+    const endOfDay = moment
+      .tz(date, 'YYYY-MM-DD', 'America/Mexico_City')
+      .endOf('day')
+      .valueOf();
+    this.logger.log('startOfDay', String(startOfDay));
+    this.logger.log('endOfDay', String(endOfDay));
     const response = await this.elasticSearchService.search(this.indexName, {
       query: {
         bool: {

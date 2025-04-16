@@ -25,15 +25,51 @@ export class DashboardService {
     startDate: string,
     endDate: string,
   ): Promise<any> {
-    const startTimestamp = moment(startDate, 'DD-MM-YYYY').valueOf();
-    const endTimestamp = moment(endDate, 'DD-MM-YYYY').endOf('day').valueOf();
+    const startTimestamp = moment
+      .tz(startDate, 'DD-MM-YYYY', 'America/Mexico_City')
+      .startOf('day')
+      .valueOf();
+    const endTimestamp = moment
+      .tz(endDate, 'DD-MM-YYYY', 'America/Mexico_City')
+      .endOf('day')
+      .valueOf();
 
-    const filteredConversations =
+    let filteredConversations =
       await this.conversacionesService.getFilteredConversations(
         startTimestamp,
         endTimestamp,
       );
+    filteredConversations = await this.filterConversationsByDate(
+      filteredConversations,
+      startTimestamp,
+      endTimestamp,
+    );
     return filteredConversations;
+  }
+
+  async filterConversationsByDate(
+    filteredConversations: any[],
+    startDate: number,
+    endDate: number,
+  ): Promise<any[]> {
+    return filteredConversations
+      .map((item) => {
+        const filteredConversaciones = item.conversaciones.filter(
+          (conversacion: any) => {
+            return (
+              conversacion.timestamp >= startDate &&
+              conversacion.timestamp <= endDate
+            );
+          },
+        );
+
+        // Retornar solo los elementos que tienen conversaciones dentro del rango
+        return {
+          ...item,
+          conversaciones: filteredConversaciones,
+        };
+      })
+      .filter((item) => item.conversaciones.length > 0); // Eliminar elementos sin conversaciones
   }
 
   async generateStyledExcel(filteredConversations: any[]): Promise<string> {
@@ -61,13 +97,15 @@ export class DashboardService {
 
     // Agregar datos
     filteredConversations.forEach((conversation) => {
-      const { user, timestamp, conversaciones } = conversation;
+      const { user, conversaciones } = conversation;
 
       conversaciones.forEach((c: any, i: number) => {
         if (c.type === 'question') {
           const nextAnswer = conversaciones[i + 1];
           worksheet.addRow({
-            fecha: timestamp,
+            fecha: moment(c.timestamp)
+              .tz('America/Mexico_City') // Convierte a hora local de Ciudad de México
+              .format('DD/M/YYYY h:mm A'),
             usuario: user,
             pregunta: c.text,
             respuesta: nextAnswer?.type === 'answer' ? nextAnswer.text : '',
