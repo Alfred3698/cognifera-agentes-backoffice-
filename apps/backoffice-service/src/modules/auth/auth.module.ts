@@ -11,8 +11,8 @@ import { DBModule } from '../db-module/module';
     DBModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: 'your-secret-key', // Cambia esto a una clave secreta más segura
-      signOptions: { expiresIn: '1h' },
+      secret: process.env.SECRET_TOKEN, // Cambia esto a una clave secreta más segura
+      signOptions: { expiresIn: '1h', algorithm: 'HS256' },
     }),
   ],
   providers: [AuthService, JwtStrategy],
