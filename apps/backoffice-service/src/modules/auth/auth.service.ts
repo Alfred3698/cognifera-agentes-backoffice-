@@ -30,8 +30,8 @@ export class AuthService {
     const result = await this.validateUser(user.userName, user.password);
     const payload = {
       username: user.userName,
-      sub: '1234',
-      roles: ['gato'], // Añadir roles como claim personalizado
+      sub: result.id,
+      roles: [], // Añadir roles como claim personalizado
       scope: 'read:messages', // Añadir scope como claim personalizado
     };
     return {
