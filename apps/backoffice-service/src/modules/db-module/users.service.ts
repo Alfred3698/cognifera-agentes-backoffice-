@@ -27,4 +27,12 @@ export class UsersDBService {
       where: { userName, password },
     });
   }
+
+  async findUserByApiKey(apiKey: string): Promise<Users | null> {
+    return await this.users
+      .createQueryBuilder('user')
+      .innerJoinAndSelect('user.apiKeys', 'apiKey') // Realiza un join con la relación apiKeys
+      .where('apiKey.key = :apiKey', { apiKey }) // Filtra por la clave API
+      .getOne(); // Obtiene un único usuario
+  }
 }

@@ -18,6 +18,7 @@ import {
   updateConfigRestricciones,
   UpdateGenetic,
 } from './backoffice.dto';
+import { ApiKeyGuard } from '../auth/api-key.guard';
 
 @ApiTags(SERVICE_NAME)
 @Controller('api/conversacion')
@@ -26,6 +27,7 @@ export class BackofficeController {
   constructor(private readonly backofficeService: BackofficeService) {}
 
   @Post('chat')
+  //@UseGuards(ApiKeyGuard)
   async getChat(@Body() params: ChatRequest) {
     return await this.backofficeService.getChat(params);
   }
