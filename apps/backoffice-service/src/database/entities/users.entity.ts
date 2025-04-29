@@ -3,9 +3,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiKeys } from './apikeys.entity';
 
 @Entity({})
 export class Users {
@@ -32,4 +34,8 @@ export class Users {
     nullable: true,
   })
   updatedAt?: Date;
+
+  // Relación con ApiKeys
+  @OneToMany(() => ApiKeys, (apiKey) => apiKey.user, { cascade: true })
+  apiKeys: ApiKeys[];
 }
