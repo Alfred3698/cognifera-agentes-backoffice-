@@ -12,16 +12,28 @@ export class UdgConfigParamService {
     private logger: Logger,
   ) {}
 
-  async getConfigParams(id?: string): Promise<ConfigParamDto[]> {
+  async getConfigParams(id: string, userId: string): Promise<ConfigParamDto[]> {
     const query = id
       ? {
           query: {
             match: {
-              _id: id,
+              _id: id + userId, // Buscar por un ID específico
             },
           },
         }
-      : { query: { match_all: {} } }; // Buscar todos si no se proporciona ID
+      : {
+          query: {
+            bool: {
+              filter: [
+                {
+                  term: {
+                    user_id: userId, // Búsqueda exacta por user_id
+                  },
+                },
+              ],
+            },
+          },
+        }; // Buscar por user_id si no se proporciona un ID
 
     const response = await this.elasticSearchService.search(
       process.env.ELASTICSEARCH_INDEX_CONFIG_PARAM,

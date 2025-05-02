@@ -5,12 +5,14 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SERVICE_NAME } from '../../constants/common';
 import { BackofficeService } from './backoffice.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request } from 'express';
 import {
   ChatRequest,
   UpdateConfigParamDto,
@@ -27,9 +29,19 @@ export class BackofficeController {
   constructor(private readonly backofficeService: BackofficeService) {}
 
   @Post('chat')
-  //@UseGuards(ApiKeyGuard)
-  async getChat(@Body() params: ChatRequest) {
-    return await this.backofficeService.getChat(params);
+  async getChat(@Body() params: ChatRequest, @Req() request: Request) {
+    //const { id } = (<any>request).user;
+    return await this.backofficeService.getChat(
+      params,
+      'cd7287c6-e32a-400f-b4da-a5365e8d8f3b',
+    );
+  }
+
+  @Post('chat/v2')
+  @UseGuards(ApiKeyGuard)
+  async getChatV2(@Body() params: ChatRequest, @Req() request: Request) {
+    const { id } = (<any>request).user;
+    return await this.backofficeService.getChat(params, id);
   }
 
   @Get('config-params')
@@ -46,8 +58,10 @@ export class BackofficeController {
     status: 500,
     description: 'Error interno del servidor.',
   })
-  async getConfigParams(): Promise<any> {
-    return await this.backofficeService._getConfigParams();
+  @UseGuards(JwtAuthGuard)
+  async getConfigParams(@Req() request: Request): Promise<any> {
+    const { userId } = (<any>request).user;
+    return await this.backofficeService._getConfigParams(userId);
   }
 
   @ApiOperation({
@@ -78,8 +92,10 @@ export class BackofficeController {
   }
 
   @Get('config-params/entrenamiento')
-  async getConfigEntrenamiento(): Promise<any> {
-    return await this.backofficeService.getConfigEntrenamiento();
+  @UseGuards(JwtAuthGuard)
+  async getConfigEntrenamiento(@Req() request: Request): Promise<any> {
+    const { userId } = (<any>request).user;
+    return await this.backofficeService.getConfigEntrenamiento(userId);
   }
 
   @Patch('config-params/entrenamiento/global')

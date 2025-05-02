@@ -24,11 +24,23 @@ export class ConversacionesService {
 
   async getAllConversacionesByIdConversacion(
     idConversacion: string,
+    userId: string,
   ): Promise<ConversacionPrincipalDTO[]> {
     const response = await this.elasticSearchService.search(this.indexName, {
       query: {
-        ids: {
-          values: [idConversacion],
+        bool: {
+          filter: [
+            {
+              term: {
+                idConversacion: idConversacion, // Búsqueda exacta por idConversacion
+              },
+            },
+            {
+              term: {
+                'userId.keyword': userId, // Búsqueda exacta por userId
+              },
+            },
+          ],
         },
       },
     });
@@ -39,6 +51,7 @@ export class ConversacionesService {
         id: hit._id,
         idConversacion: source.idConversacion,
         user: source.user,
+        userId: source.userId,
         timestamp: source.timestamp,
         conversaciones: source.conversaciones.map((conversacion: any) => ({
           text: conversacion.text,
@@ -55,6 +68,7 @@ export class ConversacionesService {
     txtConversacionUser: string,
     txtConversacionBot: string,
     idConversacion: string,
+    userId: string,
   ) {
     const conversaciones = this.buildConversaciones(
       txtConversacionUser,
@@ -62,6 +76,7 @@ export class ConversacionesService {
     );
     const conversacionPrincipal = new ConversacionPrincipalDTO();
     conversacionPrincipal.user = nameUser;
+    conversacionPrincipal.userId = userId;
     conversacionPrincipal.idConversacion = idConversacion;
     conversacionPrincipal.timestamp = moment()
       .tz('America/Mexico_City')
@@ -69,7 +84,7 @@ export class ConversacionesService {
     conversacionPrincipal.conversaciones = conversaciones;
     const documento = await this.elasticSearchService.indexDocument(
       this.indexName,
-      idConversacion,
+      idConversacion + userId,
       conversacionPrincipal,
     );
     this.logger.log('Documento creado exitosamente:');
@@ -79,12 +94,13 @@ export class ConversacionesService {
     txtConversacionUser: string,
     txtConversacionBot: string,
     idConversacion: string,
+    userId: string,
   ) {
     const conversaciones = this.buildConversaciones(
       txtConversacionUser,
       txtConversacionBot,
     );
-    await this.updateConversacion(conversaciones, idConversacion);
+    await this.updateConversacion(conversaciones, idConversacion, userId);
   }
   buildConversaciones(
     txtConversacionUser: string,
@@ -111,9 +127,11 @@ export class ConversacionesService {
   async updateConversacion(
     conversaciones: ConversacionDTO[],
     idConversacion: string,
+    userId: string,
   ) {
     const conversacion = await this.getAllConversacionesByIdConversacion(
       idConversacion,
+      userId,
     );
     const conversacionPrincipal = conversacion[0];
     if (conversacionPrincipal == null) {
@@ -290,7 +308,8 @@ export class ConversacionesService {
 
   async getConversationQuestionsCountByDay(
     id: string,
-    date: string, // Fecha en formato 'YYYY-MM-DD'
+    date: string, // Fecha en formato 'YYYY-MM-DD',
+    userId: string,
   ): Promise<{ id: string; questionCount: number }> {
     // Convertir la fecha proporcionada al inicio y fin del día en formato timestamp
     const startOfDay = moment
@@ -309,16 +328,21 @@ export class ConversacionesService {
           must: [
             {
               ids: {
-                values: [id],
+                values: [id + userId], // Buscar por ID específico
               },
             },
           ],
           filter: [
             {
+              term: {
+                'userId.keyword': userId, // Búsqueda exacta por userId
+              },
+            },
+            {
               range: {
                 timestamp: {
-                  gte: startOfDay,
-                  lte: endOfDay,
+                  gte: startOfDay, // Timestamp de inicio
+                  lte: endOfDay, // Timestamp de fin
                 },
               },
             },

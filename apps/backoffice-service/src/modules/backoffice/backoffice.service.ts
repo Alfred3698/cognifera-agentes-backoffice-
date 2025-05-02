@@ -28,7 +28,7 @@ export class BackofficeService {
     private logger: Logger,
   ) {}
 
-  async getChat(params: ChatRequest): Promise<ChatResponseDto> {
+  async getChat(params: ChatRequest, userId: string): Promise<ChatResponseDto> {
     const { q, pushName } = params;
     const idConversacion = params.idConversacion;
     this.logger.log('int getChat with params:', idConversacion);
@@ -36,9 +36,10 @@ export class BackofficeService {
       await this.conversacionesService.getConversationQuestionsCountByDay(
         idConversacion,
         moment().format('YYYY-MM-DD'),
+        userId,
       );
 
-    const config = await this.getConfigParams();
+    const config = await this.getConfigParams(userId);
     const limitMaxQuestionsPerDay =
       config[0].limitMaxQuestionsPerDay ?? MAX_QUESTIONS_PER_DAY;
     if (questionCount >= limitMaxQuestionsPerDay) {
@@ -56,11 +57,12 @@ export class BackofficeService {
         data: botResponse,
       };
     }
-    const baseConocimiento = await this.getBaseConocimiento();
+    const baseConocimiento = await this.getBaseConocimiento(userId);
     const messages = await this.buildInitialMessages(
       baseConocimiento,
       q,
       idConversacion,
+      userId,
     );
     const respModel = this.buildResponseModel(messages);
     const chatResponse = await this.getChatResponse(respModel);
@@ -79,11 +81,12 @@ export class BackofficeService {
       idConversacion,
       q,
       botResponse,
+      userId,
     );
   }
 
-  private async getBaseConocimiento(): Promise<string> {
-    const existingReglas = await this.getConfigParams();
+  private async getBaseConocimiento(userId: string): Promise<string> {
+    const existingReglas = await this.getConfigParams(userId);
     this.logger.log('int getBaseConocimiento with params:');
     const reglasToUpdate = existingReglas[0];
     return reglasToUpdate.baseConocimiento.join('');
@@ -93,6 +96,7 @@ export class BackofficeService {
     baseConocimiento: string,
     q: string,
     idConversacion: string,
+    userId: string,
   ): Promise<MessageDto[]> {
     const messages: MessageDto[] = [];
     messages.push({
@@ -104,6 +108,7 @@ export class BackofficeService {
       const conversacionPrincipal =
         await this.conversacionesService.getAllConversacionesByIdConversacion(
           idConversacion,
+          userId,
         );
       if (conversacionPrincipal.length) {
         for (const conversacion of conversacionPrincipal[0].conversaciones) {
@@ -169,6 +174,7 @@ export class BackofficeService {
     idConversacion: string,
     q: string,
     botResponse: ResponseBotDto,
+    userId: string,
   ): Promise<ChatResponseDto> {
     if (messages.length === 2) {
       idConversacion = await this.conversacionesService.createConversacion(
@@ -176,12 +182,14 @@ export class BackofficeService {
         q,
         botResponse.txtConversacionBot,
         idConversacion,
+        userId,
       );
     } else {
       await this.conversacionesService.addConversacion(
         q,
         botResponse.txtConversacionBot,
         idConversacion,
+        userId,
       );
     }
 
@@ -192,11 +200,14 @@ export class BackofficeService {
     };
   }
 
-  async getConfigParams() {
-    return await this.udgConfigParamService.getConfigParams();
+  async getConfigParams(userId: string) {
+    return await this.udgConfigParamService.getConfigParams(undefined, userId);
   }
-  async _getConfigParams() {
-    const config = await this.udgConfigParamService.getConfigParams();
+  async _getConfigParams(userId: string) {
+    const config = await this.udgConfigParamService.getConfigParams(
+      undefined,
+      userId,
+    );
     config.forEach((item) => {
       delete item.baseConocimiento;
       delete item.entrenamiento;
@@ -205,8 +216,11 @@ export class BackofficeService {
     return config[0];
   }
 
-  async getConfigEntrenamiento() {
-    const config = await this.udgConfigParamService.getConfigParams();
+  async getConfigEntrenamiento(userId: string) {
+    const config = await this.udgConfigParamService.getConfigParams(
+      undefined,
+      userId,
+    );
     return { id: config[0].id, entrenamiento: config[0].entrenamiento };
   }
 
@@ -214,6 +228,7 @@ export class BackofficeService {
     try {
       const configParams = await this.udgConfigParamService.getConfigParams(
         updates.id,
+        undefined,
       );
       if (!configParams || configParams.length === 0) {
         this.logger.error(
@@ -255,6 +270,7 @@ export class BackofficeService {
     try {
       const configParams = await this.udgConfigParamService.getConfigParams(
         data.id,
+        undefined,
       );
       if (!configParams || configParams.length === 0) {
         this.logger.error(`Configuración no encontrada para el ID: ${data.id}`);
@@ -309,6 +325,7 @@ export class BackofficeService {
       const { permitido } = data;
       const configParams = await this.udgConfigParamService.getConfigParams(
         data.id,
+        undefined,
       );
       if (!configParams || configParams.length === 0) {
         this.logger.error(`Configuración no encontrada para el ID: ${data.id}`);
@@ -364,6 +381,7 @@ export class BackofficeService {
     try {
       const configParams = await this.udgConfigParamService.getConfigParams(
         data.id,
+        undefined,
       );
       if (!configParams || configParams.length === 0) {
         this.logger.error(`Configuración no encontrada para el ID: ${data.id}`);

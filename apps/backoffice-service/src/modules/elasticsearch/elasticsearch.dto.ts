@@ -122,6 +122,14 @@ export class ConversacionPrincipalDTO {
   user: string;
 
   @ApiProperty({
+    description: 'ID del usuario',
+    example: 'user123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+
+  @ApiProperty({
     description: 'Marca de tiempo',
     example: 1616161616161,
   })
