@@ -4,6 +4,7 @@ import {
   Get,
   Post,
   Query,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import * as fs from 'fs';
 import { DashboardService } from './dashboard.service';
+import { Request } from 'express';
 import {
   DashboardResponseDto,
   GetFilteredConversationsDto,
@@ -62,11 +64,15 @@ export class DashboardController {
     status: 500,
     description: 'Error interno del servidor.',
   })
+  @UseGuards(JwtAuthGuard)
   async getFilteredConversations(
     @Query() query: GetFilteredConversationsDto,
+    @Req() request: Request,
   ): Promise<any> {
     const { startDate, endDate } = query;
+    const { userId } = (<any>request).user;
     return await this.dashboardService.getFilteredConversations(
+      userId,
       startDate,
       endDate,
     );
@@ -91,15 +97,18 @@ export class DashboardController {
     status: 500,
     description: 'Error interno del servidor.',
   })
+  @UseGuards(JwtAuthGuard)
   async downloadFilteredConversationsExcel(
     @Query() query: GetFilteredConversationsDto,
     @Res() res: Response,
+    @Req() request: Request,
   ): Promise<void> {
     const { startDate, endDate } = query;
-
+    const { userId } = (<any>request).user;
     try {
       const filePath =
         await this.dashboardService.getFilteredConversationsAndGenerateExcel(
+          userId,
           startDate,
           endDate,
         );

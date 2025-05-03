@@ -22,6 +22,7 @@ export class DashboardService {
   }
 
   async getFilteredConversations(
+    userId: string,
     startDate: string,
     endDate: string,
   ): Promise<any> {
@@ -36,6 +37,7 @@ export class DashboardService {
 
     let filteredConversations =
       await this.conversacionesService.getFilteredConversations(
+        userId,
         startTimestamp,
         endTimestamp,
       );
@@ -123,6 +125,7 @@ export class DashboardService {
     return filePath;
   }
   async getFilteredConversationsAndGenerateExcel(
+    userId: string,
     startDate: string,
     endDate: string,
   ): Promise<string> {
@@ -130,6 +133,7 @@ export class DashboardService {
       `Obteniendo conversaciones filtradas desde ${startDate} hasta ${endDate}`,
     );
     const filteredConversations = await this.getFilteredConversations(
+      userId,
       startDate,
       endDate,
     );

@@ -138,6 +138,7 @@ export class BackofficeService {
 
   private async getChatResponse(respModel: ResponseModelDto): Promise<any> {
     const jsonInputString = JSON.stringify(respModel);
+    this.logger.log('Request model --------->:', respModel.model);
     return await this.chatGptService.sendRequestChatCompletion(jsonInputString);
   }
 

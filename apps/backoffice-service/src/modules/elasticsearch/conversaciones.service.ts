@@ -236,6 +236,7 @@ export class ConversacionesService {
     });
   }
   async getFilteredConversations(
+    userId: string,
     startTimestamp: number,
     endTimestamp: number,
   ): Promise<any[]> {
@@ -248,6 +249,11 @@ export class ConversacionesService {
             },
           ],
           filter: [
+            {
+              term: {
+                'userId.keyword': userId,
+              },
+            },
             {
               range: {
                 timestamp: {
