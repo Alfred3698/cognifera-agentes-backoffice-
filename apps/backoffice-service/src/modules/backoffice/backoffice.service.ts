@@ -131,7 +131,7 @@ export class BackofficeService {
 
   private buildResponseModel(messages: MessageDto[]): ResponseModelDto {
     return {
-      model: 'gpt-4o-mini-2024-07-18', // Reemplaza esto con el modelo adecuado
+      model: 'gpt-4o-mini-2024-07-18',
       messages: messages,
     };
   }

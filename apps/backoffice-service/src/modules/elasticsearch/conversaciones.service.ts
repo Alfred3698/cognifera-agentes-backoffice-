@@ -203,7 +203,7 @@ export class ConversacionesService {
 
   async geyRecentActivity(): Promise<RecentActivityDto[]> {
     const query = {
-      size: 5,
+      size: 10,
       sort: [
         {
           timestamp: {
