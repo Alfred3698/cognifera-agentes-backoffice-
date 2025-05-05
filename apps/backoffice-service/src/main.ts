@@ -16,7 +16,7 @@ async function bootstrap() {
     origin: ['*'],
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-api-key'],
-    credentials: true,
+    credentials: false,
   });
 
   registerSwagger(app, SERVICE_NAME);
