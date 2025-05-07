@@ -158,9 +158,20 @@ export class ConversacionesService {
     return true;
   }
 
-  async getDashboardMetrics(): Promise<DashboardMetricsDto> {
+  async getDashboardMetrics(userId: string): Promise<DashboardMetricsDto> {
     const query = {
       size: 0,
+      query: {
+        bool: {
+          filter: [
+            {
+              term: {
+                'userId.keyword': userId, // Búsqueda exacta por userId
+              },
+            },
+          ],
+        },
+      },
       aggs: {
         unique_ids: {
           cardinality: {
@@ -201,13 +212,24 @@ export class ConversacionesService {
     }
   }
 
-  async geyRecentActivity(): Promise<RecentActivityDto[]> {
+  async geyRecentActivity(userId: string): Promise<RecentActivityDto[]> {
     const query = {
       size: 10,
+      query: {
+        bool: {
+          filter: [
+            {
+              term: {
+                'userId.keyword': userId, // Búsqueda exacta por userId
+              },
+            },
+          ],
+        },
+      },
       sort: [
         {
           timestamp: {
-            order: 'desc',
+            order: 'desc', // Orden descendente por timestamp
           },
         },
       ],

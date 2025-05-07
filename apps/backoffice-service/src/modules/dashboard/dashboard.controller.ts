@@ -41,8 +41,12 @@ export class DashboardController {
     status: 500,
     description: 'Error interno del servidor.',
   })
-  async getDashboardMetrics(): Promise<DashboardResponseDto> {
-    return await this.dashboardService.getDashboardMetrics();
+  @UseGuards(JwtAuthGuard)
+  async getDashboardMetrics(
+    @Req() request: Request,
+  ): Promise<DashboardResponseDto> {
+    const { userId } = (<any>request).user;
+    return await this.dashboardService.getDashboardMetrics(userId);
   }
 
   @Get('filtered')

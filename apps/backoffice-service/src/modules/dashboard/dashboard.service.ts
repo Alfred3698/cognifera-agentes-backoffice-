@@ -15,9 +15,13 @@ export class DashboardService {
     private logger: Logger,
   ) {}
 
-  async getDashboardMetrics(): Promise<DashboardResponseDto> {
-    const metrics = await this.conversacionesService.getDashboardMetrics();
-    const recentActivity = await this.conversacionesService.geyRecentActivity();
+  async getDashboardMetrics(userId: string): Promise<DashboardResponseDto> {
+    const metrics = await this.conversacionesService.getDashboardMetrics(
+      userId,
+    );
+    const recentActivity = await this.conversacionesService.geyRecentActivity(
+      userId,
+    );
     return { metrics, recentActivity };
   }
 
