@@ -17,7 +17,7 @@ export class UdgConfigParamService {
       ? {
           query: {
             match: {
-              _id: id + userId, // Buscar por un ID específico
+              _id: id, // Buscar por un ID específico
             },
           },
         }
