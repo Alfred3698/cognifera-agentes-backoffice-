@@ -12,7 +12,7 @@ import { ApiKeys } from './apikeys.entity';
 @Entity({})
 export class Users {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Column({ name: 'user_name', unique: true })
   @MinLength(5)

@@ -19,6 +19,12 @@ export class UsersDBService {
     });
   }
 
+  async findAll(): Promise<Users[]> {
+    return await this.users.find({ relations: ['apiKeys'] });
+  }
+  async save(user: Users): Promise<Users> {
+    return await this.users.save(user);
+  }
   async findUserByUserNameAndPass(
     userName: string,
     password: string,
