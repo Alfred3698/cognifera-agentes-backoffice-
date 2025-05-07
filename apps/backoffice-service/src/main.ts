@@ -13,10 +13,10 @@ async function bootstrap() {
   const app = await NestFactory.create(BackofficeServiceModule);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
-    origin: ['http://85.31.232.197:85'],
+    origin: '*',
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'x-api-key'],
-    credentials: true,
+    credentials: false,
   });
 
   registerSwagger(app, SERVICE_NAME);
