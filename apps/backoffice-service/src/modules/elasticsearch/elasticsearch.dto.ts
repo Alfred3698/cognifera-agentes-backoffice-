@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsArray,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -101,6 +102,13 @@ export class ConversacionDTO {
     example: '2023-03-20T12:34:56Z',
   })
   timestamp: Date | number;
+
+  @ApiProperty({
+    description: 'activo',
+    example: true,
+  })
+  @IsBoolean()
+  active: boolean;
 }
 
 export class ConversacionPrincipalDTO {

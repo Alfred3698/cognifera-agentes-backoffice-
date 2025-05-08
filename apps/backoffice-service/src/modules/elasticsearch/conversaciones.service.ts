@@ -53,12 +53,15 @@ export class ConversacionesService {
         user: source.user,
         userId: source.userId,
         timestamp: source.timestamp,
-        conversaciones: source.conversaciones.map((conversacion: any) => ({
-          text: conversacion.text,
-          type: conversacion.type,
-          referencias: conversacion.referencias,
-          timestamp: conversacion.timestamp,
-        })),
+        conversaciones: source.conversaciones
+          .filter((conversacion: any) => conversacion.active) // Filtrar solo las conversaciones activas
+          .map((conversacion: any) => ({
+            text: conversacion.text,
+            type: conversacion.type,
+            referencias: conversacion.referencias,
+            timestamp: conversacion.timestamp,
+            active: conversacion.active, // Mapear la propiedad active
+          })),
       } as ConversacionPrincipalDTO;
     });
   }
@@ -113,6 +116,7 @@ export class ConversacionesService {
       type: 'question',
       referencias: null,
       timestamp: moment().tz('America/Mexico_City').valueOf(),
+      active: true,
     });
 
     conversaciones.push({
@@ -120,6 +124,7 @@ export class ConversacionesService {
       type: 'answer',
       referencias: null,
       timestamp: moment().tz('America/Mexico_City').valueOf(),
+      active: true,
     });
     return conversaciones;
   }
