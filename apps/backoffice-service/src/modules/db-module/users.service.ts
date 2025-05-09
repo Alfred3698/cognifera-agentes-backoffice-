@@ -18,6 +18,11 @@ export class UsersDBService {
       where: { id: id },
     });
   }
+  async findUserById(id: string): Promise<Users> {
+    return await this.users.findOne({
+      where: { id: id },
+    });
+  }
 
   async findAll(): Promise<Users[]> {
     return await this.users.find({ relations: ['apiKeys'] });

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
@@ -6,7 +6,7 @@ import { CreateUserDto, UserResponseDto } from './users.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guard/roles.guard';
-
+import { Request } from 'express';
 @ApiTags('Users')
 @Controller('api/users')
 export class UsersController {
@@ -39,5 +39,20 @@ export class UsersController {
   @Roles('admin')
   async getAllUsers(): Promise<Omit<UserResponseDto, 'password'>[]> {
     return await this.usersService.getAllUsers();
+  }
+  @Get('validate')
+  @ApiOperation({ summary: 'Validar el token JWT' })
+  @ApiResponse({
+    status: 200,
+    description: 'Token JWT válido.',
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido.' })
+  @UseGuards(JwtAuthGuard)
+  async validateToken(
+    @Req() request: Request,
+  ): Promise<{ valid: boolean; userName }> {
+    const { userId } = (<any>request).user;
+    const user = await this.usersService.validateUser(userId);
+    return { valid: true, userName: user.userName };
   }
 }

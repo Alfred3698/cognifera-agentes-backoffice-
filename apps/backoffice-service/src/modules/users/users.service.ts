@@ -7,6 +7,14 @@ import * as crypto from 'crypto';
 export class UsersService {
   constructor(private readonly usersDBService: UsersDBService) {}
 
+  async validateUser(userId: string): Promise<UserResponseDto> {
+    const user = await this.usersDBService.findUserById(userId);
+    if (user) {
+      return user;
+    }
+    return null;
+  }
+
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     try {
       const apiKey = crypto.randomBytes(16).toString('hex'); // Genera una clave de 32 caracteres hexadecimales
