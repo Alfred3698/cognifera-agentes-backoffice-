@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   CanActivate,
   ExecutionContext,
@@ -21,7 +22,7 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
-
+    console.log('roles guard user --->', user.id); // Agregado para depuración
     if (!user || !user.roles) {
       throw new ForbiddenException('Acceso denegado: No se encontraron roles.');
     }
