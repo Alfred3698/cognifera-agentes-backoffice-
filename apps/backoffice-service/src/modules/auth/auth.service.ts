@@ -31,8 +31,8 @@ export class AuthService {
     const payload = {
       username: user.userName,
       sub: result.id,
-      roles: [], // Añadir roles como claim personalizado
-      scope: 'read:messages', // Añadir scope como claim personalizado
+      roles: result.roles,
+      scope: 'read:messages',
     };
     return {
       access_token: this.jwtService.sign(payload),

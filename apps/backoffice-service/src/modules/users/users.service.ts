@@ -16,6 +16,7 @@ export class UsersService {
         userName: createUserDto.userName,
         password: createUserDto.password,
         apiKeys: [{ id: undefined, key: apiKey, user: undefined }],
+        roles: undefined,
       });
       return newUser;
     } catch (error) {

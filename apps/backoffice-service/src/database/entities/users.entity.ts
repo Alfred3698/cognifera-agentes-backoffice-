@@ -35,7 +35,14 @@ export class Users {
   })
   updatedAt?: Date;
 
-  // Relación con ApiKeys
   @OneToMany(() => ApiKeys, (apiKey) => apiKey.user, { cascade: true })
   apiKeys: ApiKeys[];
+
+  @Column({
+    name: 'roles',
+    type: 'simple-array',
+    nullable: true,
+    default: null,
+  })
+  roles: string[] | null;
 }
