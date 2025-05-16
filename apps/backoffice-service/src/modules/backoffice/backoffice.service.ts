@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpService,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { Logger } from '@b-accel-logger/logger.service';
 import { PropertiesDBService } from '../db-module/properties.service';
 import {
@@ -25,10 +30,15 @@ export class BackofficeService {
     private readonly udgConfigParamService: UdgConfigParamService,
     private readonly conversacionesService: ConversacionesService,
     private readonly chatGptService: ChatgptService,
+    private httpService: HttpService,
     private logger: Logger,
   ) {}
 
-  async getChat(params: ChatRequest, userId: string): Promise<ChatResponseDto> {
+  async getChat(
+    params: ChatRequest,
+    userId: string,
+    isNewKnowledgeBase: boolean,
+  ): Promise<ChatResponseDto> {
     const { q, pushName } = params;
     const idConversacion = params.idConversacion;
     this.logger.log('int getChat with params:', idConversacion);
@@ -57,7 +67,12 @@ export class BackofficeService {
         data: botResponse,
       };
     }
-    const baseConocimiento = await this.getBaseConocimiento(userId);
+
+    const baseConocimiento = await this.getBaseConocimiento(
+      q,
+      userId,
+      isNewKnowledgeBase,
+    );
     const messages = await this.buildInitialMessages(
       baseConocimiento,
       q,
@@ -85,11 +100,65 @@ export class BackofficeService {
     );
   }
 
-  private async getBaseConocimiento(userId: string): Promise<string> {
+  private async getBaseConocimiento(
+    question: string,
+    userId: string,
+    isNewKnowledgeBase: boolean,
+  ): Promise<string> {
     const existingReglas = await this.getConfigParams(userId);
+    let ragKnowledgeBase = '';
     this.logger.log('int getBaseConocimiento with params:');
     const reglasToUpdate = existingReglas[0];
-    return reglasToUpdate.baseConocimiento.join('');
+    if (!isNewKnowledgeBase) {
+      return reglasToUpdate.baseConocimiento.join('');
+    } else if (reglasToUpdate.entrenamiento.contextoGlobal.length > 0) {
+      if (reglasToUpdate.isActiveRag) {
+        ragKnowledgeBase = await this.ragKnowledgeBase(question);
+      }
+
+      reglasToUpdate.entrenamiento.contextoGlobal.join('');
+      if (reglasToUpdate.entrenamiento.restricciones.denegado.length > 0) {
+        const denegado =
+          'NO debes de responder a las preguntas que se encuentran en la lista de restricciones:';
+        reglasToUpdate.entrenamiento.contextoGlobal[0] =
+          reglasToUpdate.entrenamiento.contextoGlobal +
+          ' ' +
+          denegado +
+          ' ' +
+          reglasToUpdate.entrenamiento.restricciones.denegado.join('. ');
+      }
+      if (reglasToUpdate.entrenamiento.restricciones.permitido.length > 0) {
+        const permitido =
+          'Puedo responder a la pregunta porque contiene palabras o frases que están en la lista de restricciones.';
+        reglasToUpdate.entrenamiento.contextoGlobal[0] =
+          reglasToUpdate.entrenamiento.contextoGlobal +
+          ' ' +
+          permitido +
+          ' ' +
+          reglasToUpdate.entrenamiento.restricciones.permitido.join('. ');
+      }
+      if (reglasToUpdate.entrenamiento.preguntasYRespuestas.length > 0) {
+        const preguntasYRespuestas =
+          'Utiliza la siguiente información para responder a las preguntas:';
+        reglasToUpdate.entrenamiento.contextoGlobal[0] =
+          reglasToUpdate.entrenamiento.contextoGlobal +
+          ' ' +
+          preguntasYRespuestas +
+          ' ' +
+          reglasToUpdate.entrenamiento.preguntasYRespuestas
+            ?.map(
+              (item) =>
+                `Pregunta: ${item.preguntas} Respuesta: ${item.respuestas}`,
+            )
+            ?.join('. ');
+      }
+    }
+
+    return (
+      reglasToUpdate.entrenamiento.contextoGlobal.join('\n.') +
+      'Ademas considera la siguiente información: ' +
+      ragKnowledgeBase
+    );
   }
 
   private async buildInitialMessages(
@@ -243,6 +312,7 @@ export class BackofficeService {
 
       const updateElasticSearch = {
         limit_max_query_tokens: updates.limitMaxQueryTokens,
+        is_active_rag: updates.isActiveRag ?? false,
         limit_max_caracters: updates.limitMaxCaracters,
         limit_min_caracters: updates.limitMinCaracters,
         limit_time_between_conversations: updates.limitTimeBetweenConversations,
@@ -424,6 +494,26 @@ export class BackofficeService {
     } catch (error) {
       throw new HttpException(
         `Error al actualizar la configuración: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async ragKnowledgeBase(pregunta: string): Promise<any> {
+    try {
+      const { data: response } = await this.httpService
+        .post(process.env.RAG_URL, {
+          pregunta,
+          k: 2,
+        })
+        .toPromise();
+      return response?.resultados?.map((item) => item?.texto).join('\n');
+    } catch (error) {
+      this.logger.error(
+        `Error retrieving knowledge base data: ${error.message}`,
+      );
+      throw new HttpException(
+        'Error retrieving knowledge base data',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

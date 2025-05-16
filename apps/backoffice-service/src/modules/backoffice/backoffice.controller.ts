@@ -34,6 +34,7 @@ export class BackofficeController {
     return await this.backofficeService.getChat(
       params,
       'cd7287c6-e32a-400f-b4da-a5365e8d8f3b',
+      false,
     );
   }
 
@@ -41,7 +42,14 @@ export class BackofficeController {
   @UseGuards(ApiKeyGuard)
   async getChatV2(@Body() params: ChatRequest, @Req() request: Request) {
     const { id } = (<any>request).user;
-    return await this.backofficeService.getChat(params, id);
+    return await this.backofficeService.getChat(params, id, false);
+  }
+
+  @Post('chat/v3')
+  @UseGuards(ApiKeyGuard)
+  async getChatV3(@Body() params: ChatRequest, @Req() request: Request) {
+    const { id } = (<any>request).user;
+    return await this.backofficeService.getChat(params, id, true);
   }
 
   @Get('config-params')

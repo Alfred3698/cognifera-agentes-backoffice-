@@ -60,6 +60,13 @@ export class ConfigParamDto {
   baseConocimiento: string[];
 
   entrenamiento: EntrenamientoDto;
+
+  @ApiProperty({
+    description: 'Indica si el modelo está activo para RAG',
+    example: true,
+  })
+  @IsBoolean()
+  isActiveRag: boolean;
 }
 
 export class EntrenamientoDto {
