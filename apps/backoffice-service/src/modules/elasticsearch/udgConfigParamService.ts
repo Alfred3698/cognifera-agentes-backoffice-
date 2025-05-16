@@ -45,6 +45,7 @@ export class UdgConfigParamService {
       return {
         id: hit._id,
         limitMaxQueryTokens: source.limit_max_query_tokens,
+        isActiveRag: source.is_active_rag ?? false,
         limitMaxCaracters: source.limit_max_caracters,
         limitMinCaracters: source.limit_min_caracters,
         limitTimeBetweenConversations: source.limit_time_between_conversations,

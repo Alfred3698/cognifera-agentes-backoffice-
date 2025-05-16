@@ -177,6 +177,14 @@ export class UpdateConfigParamDto {
   })
   @IsNumber()
   limitMaxQuestionsPerDay: number;
+
+  @ApiProperty({
+    description: 'Indica si el modelo está activo para RAG',
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isActiveRag: boolean;
 }
 
 export class UpdateGenetic {
