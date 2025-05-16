@@ -504,10 +504,11 @@ export class BackofficeService {
       const { data: response } = await this.httpService
         .post(process.env.RAG_URL, {
           pregunta,
-          k: 2,
+          k: 20,
         })
         .toPromise();
-      return response?.resultados?.map((item) => item?.texto).join('\n');
+      //return response?.resultados?.map((item) => item?.texto).join('\n');
+      return response?.respuesta;
     } catch (error) {
       this.logger.error(
         `Error retrieving knowledge base data: ${error.message}`,
