@@ -2,6 +2,7 @@ import { MinLength } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -45,4 +46,7 @@ export class Users {
     default: null,
   })
   roles: string[] | null;
+
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt?: Date;
 }

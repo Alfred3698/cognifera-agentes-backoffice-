@@ -1,4 +1,8 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto, UserResponseDto } from './users.dto';
 import { UsersDBService } from '../db-module/users.service';
 import { DbErrorCodes } from '../../constants/common';
@@ -43,5 +47,14 @@ export class UsersService {
   async getAllUsers(): Promise<Omit<UserResponseDto, 'password'>[]> {
     const users = await this.usersDBService.findAll();
     return users.map(({ password, ...user }) => user);
+  }
+
+  async softDeleteUser(userId: string): Promise<{ deleted: boolean }> {
+    const user = await this.usersDBService.findUserById(userId);
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    await this.usersDBService.deleteUserById(userId);
+    return { deleted: true };
   }
 }

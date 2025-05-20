@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
@@ -54,5 +63,18 @@ export class UsersController {
     const { userId } = (<any>request).user;
     const user = await this.usersService.validateUser(userId);
     return { valid: true, userName: user.userName };
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Borrado lógico de un usuario' })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuario borrado lógicamente.',
+  })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async softDeleteUser(@Param('id') id: string): Promise<{ deleted: boolean }> {
+    return await this.usersService.softDeleteUser(id);
   }
 }
