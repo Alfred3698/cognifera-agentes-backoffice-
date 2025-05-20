@@ -24,6 +24,10 @@ export class UsersDBService {
     });
   }
 
+  async deleteUserById(id: string) {
+    await this.users.softDelete(id);
+  }
+
   async findAll(): Promise<Users[]> {
     return await this.users.find({ relations: ['apiKeys'] });
   }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 
 import { Logger } from '@b-accel-logger/logger.service';
 
@@ -62,6 +62,35 @@ export class UdgConfigParamService {
         },
       } as ConfigParamDto;
     });
+  }
+
+  // ...existing code...
+
+  async saveConfigParams(userId: string): Promise<any> {
+    const emptyConfig = {
+      user_id: userId,
+      limit_max_query_tokens: 0,
+      is_active_rag: false,
+      limit_max_caracters: 0,
+      limit_min_caracters: 0,
+      limit_time_between_conversations: 0,
+      base_conocimiento: [],
+      limit_Max_questions_per_day: 0,
+      entrenamiento: {
+        contexto_global: [],
+        restricciones: {
+          permitido: [],
+          denegado: [],
+        },
+        preguntas_y_respuestas: [],
+      },
+    };
+
+    return await this.elasticSearchService.indexDocument(
+      process.env.ELASTICSEARCH_INDEX_CONFIG_PARAM,
+      undefined,
+      emptyConfig,
+    );
   }
 
   async updateConfigParam(
