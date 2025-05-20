@@ -3,9 +3,13 @@ import { CreateUserDto, UserResponseDto } from './users.dto';
 import { UsersDBService } from '../db-module/users.service';
 import { DbErrorCodes } from '../../constants/common';
 import * as crypto from 'crypto';
+import { UdgConfigParamService } from '../elasticsearch/udgConfigParamService';
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersDBService: UsersDBService) {}
+  constructor(
+    private readonly usersDBService: UsersDBService,
+    private readonly udgConfigParamService: UdgConfigParamService,
+  ) {}
 
   async validateUser(userId: string): Promise<UserResponseDto> {
     const user = await this.usersDBService.findUserById(userId);
@@ -26,6 +30,7 @@ export class UsersService {
         apiKeys: [{ id: undefined, key: apiKey, user: undefined }],
         roles: undefined,
       });
+      await this.udgConfigParamService.saveConfigParams(newUser.id);
       return newUser;
     } catch (error) {
       if (error.code === DbErrorCodes.UNIQUE_VIOLATION) {
