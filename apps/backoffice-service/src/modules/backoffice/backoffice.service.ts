@@ -178,6 +178,7 @@ export class BackofficeService {
         await this.conversacionesService.getAllConversacionesByIdConversacion(
           idConversacion,
           userId,
+          true,
         );
       if (conversacionPrincipal.length) {
         for (const conversacion of conversacionPrincipal[0].conversaciones) {

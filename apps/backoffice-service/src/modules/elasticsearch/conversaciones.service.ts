@@ -25,6 +25,7 @@ export class ConversacionesService {
   async getAllConversacionesByIdConversacion(
     idConversacion: string,
     userId: string,
+    withFilter: boolean,
   ): Promise<ConversacionPrincipalDTO[]> {
     const response = await this.elasticSearchService.search(this.indexName, {
       query: {
@@ -44,7 +45,48 @@ export class ConversacionesService {
         },
       },
     });
+    if (withFilter) {
+      return this.buildConversacionesConFiltros(response);
+    }
+    return this.buildConversacionesSinFiltro(response);
+  }
+  buildConversacionesConFiltros(response: any): ConversacionPrincipalDTO[] {
+    return response.body.hits.hits.map((hit: any) => {
+      const source = hit._source;
 
+      // Obtener el timestamp actual en la zona horaria de México
+      const now = moment().tz('America/Mexico_City');
+
+      return {
+        id: hit._id,
+        idConversacion: source.idConversacion,
+        user: source.user,
+        userId: source.userId,
+        timestamp: source.timestamp,
+
+        conversaciones: source.conversaciones
+          .filter((conversacion: any) => {
+            // Convertir el timestamp de la conversación a la zona horaria de México
+            const convTimestamp = moment(conversacion.timestamp).tz(
+              'America/Mexico_City',
+            );
+
+            // Incluir solo si está dentro de las primeras 24 horas desde el timestamp actual
+            return now.diff(convTimestamp, 'hours') <= 24;
+          })
+          .map((conversacion: any) => ({
+            text: conversacion.text,
+            type: conversacion.type,
+            referencias: conversacion.referencias,
+            timestamp: moment(conversacion.timestamp)
+              .tz('America/Mexico_City')
+              .format('DD/M/YYYY h:mm A'), // Formatear el timestamp de la conversación
+          })),
+      } as ConversacionPrincipalDTO;
+    });
+  }
+
+  buildConversacionesSinFiltro(response: any): ConversacionPrincipalDTO[] {
     return response.body.hits.hits.map((hit: any) => {
       const source = hit._source;
       return {
@@ -53,15 +95,12 @@ export class ConversacionesService {
         user: source.user,
         userId: source.userId,
         timestamp: source.timestamp,
-        conversaciones: source.conversaciones
-          .filter((conversacion: any) => conversacion.active) // Filtrar solo las conversaciones activas
-          .map((conversacion: any) => ({
-            text: conversacion.text,
-            type: conversacion.type,
-            referencias: conversacion.referencias,
-            timestamp: conversacion.timestamp,
-            active: conversacion.active, // Mapear la propiedad active
-          })),
+        conversaciones: source.conversaciones.map((conversacion: any) => ({
+          text: conversacion.text,
+          type: conversacion.type,
+          referencias: conversacion.referencias,
+          timestamp: conversacion.timestamp,
+        })),
       } as ConversacionPrincipalDTO;
     });
   }
@@ -137,6 +176,7 @@ export class ConversacionesService {
     const conversacion = await this.getAllConversacionesByIdConversacion(
       idConversacion,
       userId,
+      false,
     );
     const conversacionPrincipal = conversacion[0];
     if (conversacionPrincipal == null) {
