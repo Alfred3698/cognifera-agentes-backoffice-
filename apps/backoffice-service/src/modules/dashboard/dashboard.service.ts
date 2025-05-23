@@ -6,11 +6,13 @@ import { ConversacionesService } from '../elasticsearch/conversaciones.service';
 import * as ExcelJS from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { DashboardResponseDto } from './dashboard.dto';
+import { UsersDBService } from '../db-module/users.service';
 
 @Injectable()
 export class DashboardService {
   constructor(
     private readonly conversacionesService: ConversacionesService,
+    private readonly usersDBService: UsersDBService,
 
     private logger: Logger,
   ) {}
@@ -78,7 +80,10 @@ export class DashboardService {
       .filter((item) => item.conversaciones.length > 0); // Eliminar elementos sin conversaciones
   }
 
-  async generateStyledExcel(filteredConversations: any[]): Promise<string> {
+  async generateStyledExcel(
+    filteredConversations: any[],
+    userName: string,
+  ): Promise<string> {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Conversaciones');
 
@@ -122,7 +127,7 @@ export class DashboardService {
 
     const filePath = `conversaciones_${moment().format(
       'DD-MM-YYYY',
-    )}_${uuidv4()}.xlsx`;
+    )}_${userName}.xlsx`;
     await workbook.xlsx.writeFile(filePath);
 
     this.logger.log(`Archivo Excel generado: ${filePath}`);
@@ -141,8 +146,11 @@ export class DashboardService {
       startDate,
       endDate,
     );
-
-    const excelFilePath = await this.generateStyledExcel(filteredConversations);
+    const user = await this.usersDBService.findUserById(userId);
+    const excelFilePath = await this.generateStyledExcel(
+      filteredConversations,
+      user.userName,
+    );
 
     return excelFilePath;
   }
