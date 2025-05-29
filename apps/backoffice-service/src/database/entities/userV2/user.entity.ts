@@ -1,27 +1,30 @@
-import { MinLength } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiKeys } from './apikeys.entity';
-import { UserV2 } from './userV2/user.entity';
+import { UserSettings } from './user-settings.entity';
+import { Users } from '../users.entity';
 
 @Entity({})
-export class Users {
+export class UserV2 {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_name', unique: true })
-  @MinLength(5)
-  userName: string;
+  @Column()
+  nombre: string;
 
   @Column({ name: 'password' })
   password: string;
+
+  @Column({ unique: true })
+  correo: string;
 
   @CreateDateColumn({
     name: 'created_at',
@@ -37,20 +40,13 @@ export class Users {
   })
   updatedAt?: Date;
 
-  @OneToMany(() => ApiKeys, (apiKey) => apiKey.user, { cascade: true })
-  apiKeys: ApiKeys[];
-
-  @Column({
-    name: 'roles',
-    type: 'simple-array',
-    nullable: true,
-    default: null,
-  })
-  roles: string[] | null;
-
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt?: Date;
 
-  @OneToMany(() => UserV2, (userV2) => userV2.users)
-  userV2?: UserV2[];
+  @OneToMany(() => UserSettings, (userSettings) => userSettings.user)
+  settings: UserSettings[];
+
+  @ManyToOne(() => Users, (users) => users.userV2, { nullable: true })
+  @JoinColumn({ name: 'agente_id' })
+  users?: Users;
 }

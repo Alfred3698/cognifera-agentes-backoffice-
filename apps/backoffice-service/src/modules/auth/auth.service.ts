@@ -13,27 +13,46 @@ export class AuthService {
   ) {}
 
   async validateUser(userName: string, pass: string): Promise<any> {
-    // const user = { username, password: await bcrypt.hash(pass, 10) };
-    // const isPasswordMatching = await bcrypt.compare(pass, user.password);
     const user = await this.userDbService.findUserByUserNameAndPass(
       userName,
       pass,
     );
     if (user) {
       const { ...result } = user;
-      return result;
+      return {
+        username: user.userName,
+        sub: result.id,
+        roles: result.roles,
+        scope: 'read:messages',
+      };
+    }
+    throw new InvalidCredentialsException();
+  }
+  async validateUserV2(nombre: string, password: string): Promise<any> {
+    const user = await this.userDbService.findUserV2ByUserNameAndPass(
+      nombre,
+      password,
+    );
+    if (user) {
+      const { ...result } = user;
+      return {
+        username: user.nombre,
+        sub: result.id,
+        roles: [],
+        scope: 'read:messages',
+      };
     }
     throw new InvalidCredentialsException();
   }
 
-  async login(user: UsersDto) {
-    const result = await this.validateUser(user.userName, user.password);
-    const payload = {
-      username: user.userName,
-      sub: result.id,
-      roles: result.roles,
-      scope: 'read:messages',
-    };
+  async login(user: UsersDto, isV2 = false): Promise<{ access_token: string }> {
+    let payload;
+    if (isV2) {
+      payload = await this.validateUserV2(user.userName, user.password);
+    } else {
+      payload = await this.validateUser(user.userName, user.password);
+    }
+
     return {
       access_token: this.jwtService.sign(payload),
     };

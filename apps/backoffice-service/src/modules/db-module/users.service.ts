@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { Users } from '../../database/entities/users.entity';
+import { UserV2 } from '../../database/entities/userV2/user.entity';
 
 @Injectable()
 export class UsersDBService {
@@ -11,6 +12,8 @@ export class UsersDBService {
   constructor(
     @InjectRepository(Users)
     private readonly users: Repository<Users>,
+    @InjectRepository(UserV2)
+    private readonly userV2: Repository<UserV2>,
   ) {}
 
   async findTestMeId(id: number): Promise<Users> {
@@ -40,6 +43,15 @@ export class UsersDBService {
   ): Promise<Users> {
     return await this.users.findOne({
       where: { userName, password },
+    });
+  }
+
+  async findUserV2ByUserNameAndPass(
+    correo: string,
+    password: string,
+  ): Promise<UserV2> {
+    return await this.userV2.findOne({
+      where: { correo, password },
     });
   }
 
