@@ -10,4 +10,9 @@ export class AuthController {
   async login(@Body() user: UsersDto) {
     return this.authService.login(user);
   }
+
+  @Post('v2/login')
+  async loginV2(@Body() user: UsersDto) {
+    return this.authService.login(user, true);
+  }
 }
