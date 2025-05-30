@@ -28,17 +28,28 @@ export class AuthService {
     }
     throw new InvalidCredentialsException();
   }
-  async validateUserV2(nombre: string, password: string): Promise<any> {
+  async validateUserV2(correo: string, password: string): Promise<any> {
     const user = await this.userDbService.findUserV2ByUserNameAndPass(
-      nombre,
+      correo,
       password,
     );
     if (user) {
+      const { roles } = user;
+
+      // Extraer los nombres de los roles y permisos
+      const roleNames = roles.map((role) => role.name);
+
+      // Extraer los permisos usando map y reduce
+      const permissions = roles
+        .map((role) => role.permissions.map((permission) => permission.name))
+        .reduce((acc, curr) => acc.concat(curr), []);
+
       const { ...result } = user;
       return {
         username: user.nombre,
         sub: result.id,
-        roles: [],
+        roles: roleNames,
+        permissions,
         scope: 'read:messages',
       };
     }
