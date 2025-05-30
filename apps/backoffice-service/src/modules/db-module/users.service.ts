@@ -52,6 +52,7 @@ export class UsersDBService {
   ): Promise<UserV2> {
     return await this.userV2.findOne({
       where: { correo, password },
+      relations: ['roles', 'roles.permissions'],
     });
   }
 

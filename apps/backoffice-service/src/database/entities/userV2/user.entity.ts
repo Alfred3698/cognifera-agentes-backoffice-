@@ -4,6 +4,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -11,7 +12,7 @@ import {
 } from 'typeorm';
 import { UserSettings } from './user-settings.entity';
 import { Users } from '../users.entity';
-
+import { Role } from './role.entity';
 @Entity({})
 export class UserV2 {
   @PrimaryGeneratedColumn('uuid')
@@ -49,4 +50,8 @@ export class UserV2 {
   @ManyToOne(() => Users, (users) => users.userV2, { nullable: true })
   @JoinColumn({ name: 'agente_id' })
   users?: Users;
+
+  // Relación con roles (muchos a muchos)
+  @ManyToMany(() => Role, (role) => role.users)
+  roles: Role[];
 }
