@@ -50,7 +50,4 @@ export class Users {
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt?: Date;
-
-  @OneToMany(() => UserV2, (userV2) => userV2.users)
-  userV2?: UserV2[];
 }

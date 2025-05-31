@@ -77,4 +77,17 @@ export class UsersController {
   async softDeleteUser(@Param('id') id: string): Promise<{ deleted: boolean }> {
     return await this.usersService.softDeleteUser(id);
   }
+
+  @Get('agente')
+  @ApiOperation({ summary: 'Validar el token JWT' })
+  @ApiResponse({
+    status: 200,
+    description: 'Token JWT válido.',
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT inválido.' })
+  @UseGuards(JwtAuthGuard)
+  async getAgenteByUserId(@Req() request: Request): Promise<any> {
+    const { userId } = (<any>request).user;
+    return await this.usersService.getAgenteByUserId(userId);
+  }
 }

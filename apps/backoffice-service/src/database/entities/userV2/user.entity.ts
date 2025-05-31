@@ -11,8 +11,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserSettings } from './user-settings.entity';
-import { Users } from '../users.entity';
 import { Role } from './role.entity';
+import { Agente } from './agente.entity';
 @Entity({})
 export class UserV2 {
   @PrimaryGeneratedColumn('uuid')
@@ -47,9 +47,9 @@ export class UserV2 {
   @OneToMany(() => UserSettings, (userSettings) => userSettings.user)
   settings: UserSettings[];
 
-  @ManyToOne(() => Users, (users) => users.userV2, { nullable: true })
+  @ManyToOne(() => Agente, (agente) => agente.userV2, { nullable: true })
   @JoinColumn({ name: 'agente_id' })
-  users?: Users;
+  agente?: Agente;
 
   // Relación con roles (muchos a muchos)
   @ManyToMany(() => Role, (role) => role.users)

@@ -57,4 +57,12 @@ export class UsersService {
     await this.usersDBService.deleteUserById(userId);
     return { deleted: true };
   }
+
+  async getAgenteByUserId(userId: string): Promise<any> {
+    const user = await this.usersDBService.findUserV2ById(userId);
+    if (!user.agente) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    return user.agente;
+  }
 }

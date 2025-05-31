@@ -27,6 +27,13 @@ export class UsersDBService {
     });
   }
 
+  async findUserV2ById(id: string): Promise<UserV2> {
+    return await this.userV2.findOne({
+      where: { id: id },
+      relations: ['agente'],
+    });
+  }
+
   async deleteUserById(id: string) {
     await this.users.softDelete(id);
   }
