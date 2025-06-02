@@ -59,7 +59,7 @@ export class UsersService {
   }
 
   async getAgenteByUserId(userId: string): Promise<any> {
-    const user = await this.usersDBService.findUserV2ById(userId);
+    const user = await this.usersDBService.findUserV2ById(userId, false);
     if (!user.agente) {
       throw new NotFoundException('Usuario no encontrado');
     }

@@ -7,6 +7,7 @@ import { ElasticsearchService } from './modules/elasticsearch/elasticsearch.serv
 import { LoggerModule } from '@b-accel-logger/logger.module';
 import { DashBoardModule } from './modules/dashboard/dashboard.module';
 import { UsersModule } from './modules/users/users.module';
+import { ArchivoModule } from './modules/archivo/archivo.module';
 
 /**
  *
@@ -17,6 +18,7 @@ import { UsersModule } from './modules/users/users.module';
     DashBoardModule,
     AuthModule,
     UsersModule,
+    ArchivoModule,
     LoggerModule.forRoot({ context: 'Backoffice module' }),
     ConfigModule.forRoot({
       ignoreEnvFile: true,

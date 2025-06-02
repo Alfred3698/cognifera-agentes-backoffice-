@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 
 import { Users } from '../../database/entities/users.entity';
 import { UserV2 } from '../../database/entities/userV2/user.entity';
+import { Archivo } from '../../database/entities/userV2/archivo.entity';
 
 @Injectable()
 export class UsersDBService {
@@ -14,6 +15,9 @@ export class UsersDBService {
     private readonly users: Repository<Users>,
     @InjectRepository(UserV2)
     private readonly userV2: Repository<UserV2>,
+
+    @InjectRepository(Archivo)
+    private readonly archivoRepository: Repository<Archivo>,
   ) {}
 
   async findTestMeId(id: number): Promise<Users> {
@@ -27,10 +31,31 @@ export class UsersDBService {
     });
   }
 
-  async findUserV2ById(id: string): Promise<UserV2> {
+  async findArchivoByIdAndUserId(
+    userId: string,
+    archivoId: number,
+  ): Promise<Archivo> {
+    const archivo = await this.archivoRepository.findOne({
+      where: {
+        id: archivoId,
+        user: { id: userId },
+      },
+      relations: ['user'],
+    });
+
+    return archivo;
+  }
+
+  async findUserV2ById(id: string, includeArchivo: boolean): Promise<UserV2> {
+    const relations = ['agente'];
+
+    if (includeArchivo) {
+      relations.push('archivo');
+    }
+
     return await this.userV2.findOne({
       where: { id: id },
-      relations: ['agente'],
+      relations,
     });
   }
 
