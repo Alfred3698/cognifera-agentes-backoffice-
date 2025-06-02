@@ -13,6 +13,7 @@ import {
 import { UserSettings } from './user-settings.entity';
 import { Role } from './role.entity';
 import { Agente } from './agente.entity';
+import { Archivo } from './archivo.entity';
 @Entity({})
 export class UserV2 {
   @PrimaryGeneratedColumn('uuid')
@@ -54,4 +55,9 @@ export class UserV2 {
   // Relación con roles (muchos a muchos)
   @ManyToMany(() => Role, (role) => role.users)
   roles: Role[];
+
+  @OneToMany(() => Archivo, (archivo) => archivo.user, {
+    onDelete: 'CASCADE',
+  })
+  archivo: Archivo[];
 }

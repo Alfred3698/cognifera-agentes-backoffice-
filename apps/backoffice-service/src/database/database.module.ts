@@ -12,6 +12,7 @@ import { UserSettings } from './entities/userV2/user-settings.entity';
 import { Role } from './entities/userV2/role.entity';
 import { Permission } from './entities/userV2/permission.entity';
 import { Agente } from './entities/userV2/agente.entity';
+import { Archivo } from './entities/userV2/archivo.entity';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -25,6 +26,7 @@ import { Agente } from './entities/userV2/agente.entity';
       Role,
       Permission,
       Agente,
+      Archivo,
     ]),
   ],
   exports: [TypeOrmModule, ConfigModule],
