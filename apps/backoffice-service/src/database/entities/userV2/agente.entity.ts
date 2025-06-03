@@ -10,7 +10,7 @@ import { UserV2 } from './user.entity';
 @Entity({ name: 'agentes' })
 export class Agente {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Column({ name: 'nombre' })
   nombre: string;
