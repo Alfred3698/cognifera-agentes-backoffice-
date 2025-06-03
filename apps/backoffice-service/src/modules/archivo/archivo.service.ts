@@ -27,8 +27,10 @@ export class ArchivoService {
   async uploadedFile(file, userId: string) {
     try {
       this.logger.log(`init function uploadedFile ${file.mimetype}`);
+      const agente = await this.getAgenteByUserId(userId);
       const fileBuffer = file.buffer; // Asegúrate de que `file.buffer` contenga el contenido del archivo
       const fileHash = this.computeHash(fileBuffer);
+      await this.existsByHashAndAgente(fileHash, agente.id);
       const path = '';
       const fileName = `${uuid()}_${file.originalname}`;
       await this.awsS3BucketService.uploadFile(file, path, fileName);
@@ -45,6 +47,40 @@ export class ArchivoService {
       this.logger.error(`error function uploadedFile`, err);
       throw err;
     }
+  }
+
+  async existsByHashAndAgente(hash: string, agenteId: string) {
+    this.logger.log(
+      `init function existsByHashAndAgente hash: ${hash}, agenteId: ${agenteId}`,
+    );
+    const exists = await this.archivoDBService.existsByHashAndAgente(
+      hash,
+      agenteId,
+    );
+    this.logger.log(
+      `Archivo exists: ${exists} for hash: ${hash} and agenteId: ${agenteId}`,
+    );
+    if (exists) {
+      this.logger.error(
+        `Archivo already exists for hash: ${hash} and agenteId: ${agenteId}`,
+      );
+      throw new HttpException(
+        'Archivo already exists for this agent',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+  async getAgenteByUserId(userId: string) {
+    const agente = (await this.usersDBService.findUserV2ById(userId, true))
+      .agente;
+    if (!agente) {
+      this.logger.error(`User with ID ${userId} does not have an agent`);
+      throw new HttpException(
+        'User does not have an agent associated',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return agente;
   }
 
   async getFileByUserId(userId: string) {
