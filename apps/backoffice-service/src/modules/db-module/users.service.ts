@@ -31,14 +31,10 @@ export class UsersDBService {
     });
   }
 
-  async findArchivoByIdAndUserId(
-    userId: string,
-    archivoId: number,
-  ): Promise<Archivo> {
+  async findArchivoById(archivoId: number): Promise<Archivo> {
     const archivo = await this.archivoRepository.findOne({
       where: {
         id: archivoId,
-        user: { id: userId },
       },
       relations: ['user'],
     });

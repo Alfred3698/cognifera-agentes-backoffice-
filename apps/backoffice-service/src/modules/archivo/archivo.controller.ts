@@ -40,13 +40,12 @@ export class ArchivoController {
   }
 
   @Get('download/:id')
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   async downloadFile(
-    @Req() request: any,
     @Res() res: Response,
     @Param('id', new ParseIntPipe()) idArchivo: number,
   ) {
-    const { userId } = request.user;
-    await this.archivoService.downloadFile(res, userId, idArchivo);
+    //const { userId } = request.user;
+    await this.archivoService.downloadFile(res, idArchivo);
   }
 }

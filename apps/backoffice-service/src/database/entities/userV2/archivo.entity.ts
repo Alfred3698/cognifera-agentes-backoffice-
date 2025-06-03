@@ -40,4 +40,7 @@ export class Archivo {
     nullable: true,
   })
   updatedAt?: Date;
+
+  @Column({ nullable: true })
+  hash: string;
 }
