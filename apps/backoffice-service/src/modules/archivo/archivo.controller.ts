@@ -29,7 +29,7 @@ export class ArchivoController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file, @Req() request: Request) {
     const { userId } = (<any>request).user;
-    await this.archivoService.uploadedFile(file, userId);
+    return await this.archivoService.uploadedFile(file, userId);
   }
 
   @Get()

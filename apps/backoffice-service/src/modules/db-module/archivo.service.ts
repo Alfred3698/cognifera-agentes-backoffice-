@@ -12,6 +12,6 @@ export class ArchivoDBService {
   ) {}
 
   async save(file: Archivo) {
-    await this.archivoRepository.save(file);
+    return await this.archivoRepository.save(file);
   }
 }
