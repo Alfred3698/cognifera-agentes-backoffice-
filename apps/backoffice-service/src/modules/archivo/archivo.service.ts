@@ -13,6 +13,7 @@ import { UserV2 } from '../../database/entities/userV2/user.entity';
 import { ArchivoDBService } from '../db-module/archivo.service';
 import { UsersDBService } from '../db-module/users.service';
 import { Response } from 'express';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class ArchivoService {
@@ -26,7 +27,8 @@ export class ArchivoService {
   async uploadedFile(file, userId: string) {
     try {
       this.logger.log(`init function uploadedFile ${file.mimetype}`);
-
+      const fileBuffer = file.buffer; // Asegúrate de que `file.buffer` contenga el contenido del archivo
+      const fileHash = this.computeHash(fileBuffer);
       const path = '';
       const fileName = `${uuid()}_${file.originalname}`;
       await this.awsS3BucketService.uploadFile(file, path, fileName);
@@ -37,6 +39,7 @@ export class ArchivoService {
       archivo.nombre = fileName;
       archivo.type = file.mimetype;
       archivo.user = user;
+      archivo.hash = fileHash;
       return await this.archivoDBService.save(archivo);
     } catch (err) {
       this.logger.error(`error function uploadedFile`, err);
@@ -59,13 +62,10 @@ export class ArchivoService {
     }
   }
 
-  async downloadFile(res: Response, userId: string, idArchivo: number) {
+  async downloadFile(res: Response, idArchivo: number) {
     try {
-      this.logger.log(`init function downloadFile  ${userId}`);
-      const archivo = await this.usersDBService.findArchivoByIdAndUserId(
-        userId,
-        idArchivo,
-      );
+      this.logger.log(`init function downloadFile  `);
+      const archivo = await this.usersDBService.findArchivoById(idArchivo);
       if (archivo) {
         const fileKey = archivo.path + `/` + archivo.nombre;
         this.logger.log('path-->', fileKey);
@@ -80,5 +80,9 @@ export class ArchivoService {
       this.logger.error(`error function downloadFileGasto`, err);
       throw err;
     }
+  }
+
+  computeHash(buffer: Buffer): string {
+    return createHash('sha256').update(buffer).digest('hex');
   }
 }
