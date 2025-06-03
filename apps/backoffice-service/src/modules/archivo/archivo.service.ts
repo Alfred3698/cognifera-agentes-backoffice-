@@ -37,7 +37,7 @@ export class ArchivoService {
       archivo.nombre = fileName;
       archivo.type = file.mimetype;
       archivo.user = user;
-      await this.archivoDBService.save(archivo);
+      return await this.archivoDBService.save(archivo);
     } catch (err) {
       this.logger.error(`error function uploadedFile`, err);
       throw err;
