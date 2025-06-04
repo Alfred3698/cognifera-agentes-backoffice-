@@ -57,9 +57,7 @@ export class ArchivoService {
       hash,
       agenteId,
     );
-    this.logger.log(
-      `Archivo exists: ${archivo.nombre} for hash: ${hash} and agenteId: ${agenteId}`,
-    );
+
     if (archivo) {
       this.logger.error(
         `Archivo already exists for hash: ${hash} and agenteId: ${agenteId}`,
