@@ -53,19 +53,23 @@ export class ArchivoService {
     this.logger.log(
       `init function existsByHashAndAgente hash: ${hash}, agenteId: ${agenteId}`,
     );
-    const exists = await this.archivoDBService.existsByHashAndAgente(
+    const archivo = await this.archivoDBService.existsByHashAndAgente(
       hash,
       agenteId,
     );
     this.logger.log(
-      `Archivo exists: ${exists} for hash: ${hash} and agenteId: ${agenteId}`,
+      `Archivo exists: ${archivo.nombre} for hash: ${hash} and agenteId: ${agenteId}`,
     );
-    if (exists) {
+    if (archivo) {
       this.logger.error(
         `Archivo already exists for hash: ${hash} and agenteId: ${agenteId}`,
       );
       throw new HttpException(
-        'Archivo already exists for this agent',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Archivo already exists for this agent',
+          id: archivo.id, // Incluye el ID del archivo existente
+        },
         HttpStatus.BAD_REQUEST,
       );
     }

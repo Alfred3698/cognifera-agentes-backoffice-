@@ -18,7 +18,7 @@ export class ArchivoDBService {
   async existsByHashAndAgente(
     hash: string,
     agenteId: string,
-  ): Promise<boolean> {
+  ): Promise<Archivo> {
     const archivo = await this.archivoRepository
       .createQueryBuilder('archivo')
       .innerJoin('archivo.user', 'user') // Relación entre Archivo y UserV2
@@ -27,6 +27,6 @@ export class ArchivoDBService {
       .andWhere('agente.id = :agenteId', { agenteId })
       .getOne(); // Devuelve un archivo si existe
 
-    return !!archivo; // Devuelve true si el archivo existe, false si no
+    return archivo; // Devuelve true si el archivo existe, false si no
   }
 }
