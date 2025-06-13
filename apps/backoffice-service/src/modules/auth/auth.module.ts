@@ -12,7 +12,7 @@ import { DBModule } from '../db-module/module';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.SECRET_TOKEN, // Clave secreta para el access token
-      signOptions: { expiresIn: '5m', algorithm: 'HS256' }, // Expiración de 5 minutos para el access token
+      signOptions: { expiresIn: '2h', algorithm: 'HS256' }, // Expiración de 5 minutos para el access token
     }),
   ],
   providers: [AuthService, JwtStrategy],
