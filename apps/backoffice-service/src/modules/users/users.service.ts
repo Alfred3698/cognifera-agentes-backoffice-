@@ -2,18 +2,36 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { CreateUserDto, UserResponseDto } from './users.dto';
 import { UsersDBService } from '../db-module/users.service';
 import { DbErrorCodes } from '../../constants/common';
 import * as crypto from 'crypto';
 import { UdgConfigParamService } from '../elasticsearch/udgConfigParamService';
+import { MailService } from '../mail/mail.service';
+import * as fs from 'fs';
+import * as path from 'path';
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersDBService: UsersDBService,
     private readonly udgConfigParamService: UdgConfigParamService,
+    private readonly mailService: MailService,
   ) {}
+  // async onModuleInit() {
+  //   const templatePath = path.join(
+  //     process.cwd(),
+  //     'apps/backoffice-service/src/template/registro_usuario.html',
+  //   );
+  //   const templateContent = fs.readFileSync(templatePath, 'utf-8');
+  //   await this.mailService.enviarCorreo(
+  //     'alfred3698@gmail.com',
+  //     'prueba',
+  //     '',
+  //     templateContent,
+  //   );
+  // }
 
   async validateUser(userId: string): Promise<UserResponseDto> {
     const user = await this.usersDBService.findUserById(userId);
