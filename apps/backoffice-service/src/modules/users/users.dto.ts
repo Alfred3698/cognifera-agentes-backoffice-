@@ -82,3 +82,17 @@ export class UserResponseDto {
   })
   updatedAt?: Date;
 }
+
+export class ChangePasswordDto {
+  @IsNotEmpty()
+  currentPassword: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
+  @Matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
+    message:
+      'La contraseña debe tener al menos una letra mayúscula, un número y un carácter especial.',
+  })
+  newPassword: string;
+}
