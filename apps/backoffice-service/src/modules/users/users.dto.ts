@@ -84,9 +84,18 @@ export class UserResponseDto {
 }
 
 export class ChangePasswordDto {
+  @ApiProperty({
+    description: 'Contraseña actual del usuario.',
+    example: 'Password123!',
+  })
   @IsNotEmpty()
   currentPassword: string;
 
+  @ApiProperty({
+    description:
+      'Nueva contraseña del usuario. Debe tener al menos 8 caracteres, una letra mayúscula, un número y un carácter especial.',
+    example: 'NewPassword123!',
+  })
   @IsNotEmpty()
   @IsString()
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
