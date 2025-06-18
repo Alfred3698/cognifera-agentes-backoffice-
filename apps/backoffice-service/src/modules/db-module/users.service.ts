@@ -31,6 +31,15 @@ export class UsersDBService {
     });
   }
 
+  async updateUser(id: string, updateData: Partial<UserV2>): Promise<UserV2> {
+    const user = await this.userV2.findOne({ where: { id } });
+    if (!user) {
+      throw new Error(`Usuario con ID ${id} no encontrado.`);
+    }
+    Object.assign(user, updateData);
+    return await this.userV2.save(user);
+  }
+
   async findArchivoById(archivoId: number): Promise<Archivo> {
     const archivo = await this.archivoRepository.findOne({
       where: {

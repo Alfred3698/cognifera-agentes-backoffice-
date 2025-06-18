@@ -4,7 +4,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { CreateUserDto, UserResponseDto } from './users.dto';
+import { ChangePasswordDto, CreateUserDto, UserResponseDto } from './users.dto';
 import { UsersDBService } from '../db-module/users.service';
 import { DbErrorCodes } from '../../constants/common';
 import * as crypto from 'crypto';
@@ -82,5 +82,22 @@ export class UsersService {
       throw new NotFoundException('Usuario no encontrado');
     }
     return user.agente;
+  }
+
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
+    const { currentPassword, newPassword } = changePasswordDto;
+
+    // Obtener el usuario de la base de datos
+    const user = await this.usersDBService.findUserV2ById(userId, false);
+    if (!user) {
+      throw new Error('Usuario no encontrado.');
+    }
+    if (user.password !== currentPassword) {
+      throw new Error('La contraseña actual es incorrecta.');
+    }
+    await this.usersDBService.updateUser(userId, { password: newPassword });
   }
 }

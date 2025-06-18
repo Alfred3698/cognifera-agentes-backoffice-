@@ -60,4 +60,19 @@ export class UserV2 {
     onDelete: 'CASCADE',
   })
   archivo: Archivo[];
+
+  // Campo para guardar el token de confirmación
+  @Column({ name: 'confirmation_token', nullable: true })
+  confirmationToken?: string;
+
+  // Campo para guardar la fecha de expiración del token
+  @Column({
+    name: 'confirmation_token_expires_at',
+    type: 'timestamp',
+    nullable: true,
+  })
+  confirmationTokenExpiresAt?: Date;
+
+  @Column({ name: 'is_active', default: false })
+  isActive: boolean;
 }

@@ -11,7 +11,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
-import { CreateUserDto, UserResponseDto } from './users.dto';
+import { ChangePasswordDto, CreateUserDto, UserResponseDto } from './users.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guard/roles.guard';
@@ -89,5 +89,23 @@ export class UsersController {
   async getAgenteByUserId(@Req() request: Request): Promise<any> {
     const { userId } = (<any>request).user;
     return await this.usersService.getAgenteByUserId(userId);
+  }
+
+  @Post('change-password')
+  @ApiOperation({ summary: 'Cambiar la contraseña de un usuario' })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña cambiada exitosamente.',
+  })
+  @ApiResponse({ status: 400, description: 'Contraseña actual incorrecta.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Req() request: Request,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const { userId } = (<any>request).user;
+    await this.usersService.changePassword(userId, changePasswordDto);
+    return { message: 'Contraseña cambiada exitosamente.' };
   }
 }
